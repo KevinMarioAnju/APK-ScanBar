@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_rounded"
+    android:backgroundTint="#210000"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tvVioDetailType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tidak menggunakan alat keselamatan kerja"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvVioDetailDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="16/01/2023"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tvVioDetailInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Rp 1,000,000.00  Safety"
+        android:textColor="@color/text_secondary"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/tvVioDetailLoc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="LOKASI: -"
+        android:textColor="@color/text_secondary"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/tvVioDetailDoc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="NO. DOK: -"
+        android:textColor="@color/text_secondary"
+        android:textSize="10sp" />
+
+</LinearLayout>

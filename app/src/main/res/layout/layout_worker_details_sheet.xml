@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:background="#E2E8F0" />
+
+    <TextView
+        android:id="@+id/tvSheetName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NAMA PEKERJA"
+        android:textColor="@color/text_high"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvSheetRegNo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Reg No: 1203232"
+        android:textColor="@color/text_low"
+        android:textSize="14sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="20dp"
+        android:background="@color/divider_light" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:alignmentMode="alignMargins"
+        android:columnOrderPreserved="false">
+
+        <!-- Info Grid -->
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="JABATAN" />
+            <TextView android:id="@+id/tvSheetPosition" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="KONTRAKTOR" />
+            <TextView android:id="@+id/tvSheetContractor" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="TGL KEJADIAN" />
+            <TextView android:id="@+id/tvSheetDate" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="JENIS VIO" />
+            <TextView android:id="@+id/tvSheetVioType" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="PLANT/DIVISI" />
+            <TextView android:id="@+id/tvSheetPlant" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="LOKASI" />
+            <TextView android:id="@+id/tvSheetLocation" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem">
+            <TextView style="@style/SheetInfoLabel" android:text="NO. DOKUMEN" />
+            <TextView android:id="@+id/tvSheetDocNo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+    </GridLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutFine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_fine_highlight"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TOTAL DENDA"
+            android:textColor="@color/alert_terracotta"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSheetFine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Rp -"
+            android:textColor="@color/alert_terracotta"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ScanBar 2.0: Professional & Aesthetic Palette -->
+    <color name="primary_dark">#2D3436</color>
+    <color name="accent_teal">#00B894</color>
+    <color name="alert_terracotta">#E17055</color>
+    <color name="bg_main">#F9FAFB</color>
+    <color name="bg_surface">#FFFFFF</color>
+    <color name="text_high">#2D3436</color>
+    <color name="text_medium">#636E72</color>
+    <color name="text_low">#B2BEC3</color>
+    <color name="divider_light">#F1F2F6</color>
+
+    <!-- Dark Mode Support -->
+    <color name="bg_dark_main">#121212</color>
+    <color name="bg_dark_surface">#1E1E1E</color>
+
+    <!-- Legacy compatibility (kept but updated values) -->
+    <color name="bg_dark">#F9FAFB</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="accent_indigo">#00B894</color>
+    <color name="success_emerald">#00B894</color>
+    <color name="warning_rose">#E17055</color>
+    <color name="text_slate_main">#2D3436</color>
+    <color name="text_slate_sub">#636E72</color>
+    <color name="success_green">#00B894</color>
+    <color name="error_red">#E17055</color>
+    <color name="divider">#F1F2F6</color>
+    <color name="yellow_accent">#00B894</color>
+    <color name="text_primary">#2D3436</color>
+    <color name="text_secondary">#636E72</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

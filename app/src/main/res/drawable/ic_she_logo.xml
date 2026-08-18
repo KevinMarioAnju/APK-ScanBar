@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Simplified Gear Shape (Green) -->
+    <path
+        android:fillColor="#009A44"
+        android:pathData="M100,20 L115,20 L118,40 A60,60 0 0,1 135,47 L148,35 L158,45 L146,58 A60,60 0 0,1 153,75 L173,78 L173,93 L153,96 A60,60 0 0,1 146,113 L158,126 L148,136 L135,124 A60,60 0 0,1 118,131 L115,151 L100,151 L97,131 A60,60 0 0,1 80,124 L67,136 L57,126 L69,113 A60,60 0 0,1 62,96 L42,93 L42,78 L62,75 A60,60 0 0,1 69,58 L57,45 L67,35 L80,47 A60,60 0 0,1 97,40 Z" />
+
+    <!-- Outer Circle (Yellow) -->
+    <path
+        android:fillColor="#F7E02C"
+        android:pathData="M100,50 A45,45 0 1,1 99.9,50 Z M100,58 A37,37 0 1,0 100.1,58 Z" />
+
+    <!-- Text "SHE" Placeholder (Yellow Circle for now as text vectors are complex) -->
+    <path
+        android:fillColor="#F7E02C"
+        android:pathData="M100,80 A20,20 0 1,1 99.9,80 Z" />
+</vector>
