@@ -20,6 +20,23 @@ public class Violation {
     public String notes;
     public String docNo;
     public String fine;
+    public String plant;
+    
+    // Safety Audit Enhanced Fields
+    public String year;
+    public String time;
+    public String plantDivision;
+    public String tkp;
+    public String contractor;
+    public String userPlantDivision;
+    public String name; // Worker Name snapshot
+    public String jobTitle; // Job Title snapshot
+    public String amount; // Detailed amount
+    public String charge;
+    public String damages;
+    public String totalAll;
+    public String officer;
+    public String paymentProofUri;
 
     public Violation(String workerRegNo, String type, String date, String location, String notes) {
         this.workerRegNo = workerRegNo;

@@ -1,0 +1,10 @@
+- [x] Research Existing User and Database Structure
+- [/] Creating Implementation Plan
+- [ ] Implement Data Layer (User, UserDao, AppDatabase)
+- [ ] Update Authentication (InspectorLoginActivity)
+- [ ] Implement Account Management UI
+	- [ ] Create layout files (fragment, item, dialog)
+	- [ ] Create UserAdapter
+	- [ ] Create ManageAccountsFragment
+- [ ] Update MainActivity for Role-based UI
+- [ ] Verification

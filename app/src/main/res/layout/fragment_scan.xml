@@ -5,136 +5,132 @@
     android:layout_height="match_parent"
     android:background="@color/bg_main">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_height="match_parent">
 
-        <!-- Camera Section -->
-        <com.google.android.material.card.MaterialCardView
-            style="@style/ModernCard"
+        <LinearLayout
+            android:id="@+id/llScannerContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/primary_dark"
-            android:layout_margin="0dp">
+            android:orientation="vertical"
+            android:padding="20dp">
 
-            <LinearLayout
+            <!-- Camera Section -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ModernCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                app:cardBackgroundColor="@color/primary_dark"
+                android:layout_margin="0dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Terminal Scan"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Arahkan kamera ke barcode pekerja"
-                    android:textColor="#B2BEC3"
-                    android:textSize="12sp" />
-
-                <androidx.cardview.widget.CardView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:layout_marginTop="20dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-                    <androidx.camera.view.PreviewView
-                        android:id="@+id/previewView"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Terminal Scan"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Arahkan kamera ke barcode pekerja"
+                        android:textColor="#B2BEC3"
+                        android:textSize="12sp" />
+
+                    <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/black" />
-                </androidx.cardview.widget.CardView>
+                        android:layout_height="250dp"
+                        android:layout_marginTop="20dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp">
 
-                <Button
-                    android:id="@+id/btnActivateCamera"
-                    style="@style/TealButtonStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="Aktifkan Kamera" />
+                        <androidx.camera.view.PreviewView
+                            android:id="@+id/previewView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/black"
+                            android:visibility="gone" />
+                    </androidx.cardview.widget.CardView>
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <Button
+                        android:id="@+id/btnActivateCamera"
+                        style="@style/TealButtonStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="Aktifkan Kamera" />
 
-        <!-- Input Section -->
-        <com.google.android.material.card.MaterialCardView
-            style="@style/ModernCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="0dp">
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
+            <!-- Input Section -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ModernCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="0dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Input Manual"
-                    android:textColor="@color/text_high"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etRegNo"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_search_modern"
-                    android:hint="Ketik No. Reg Pekerja..."
-                    android:imeOptions="actionSearch"
-                    android:inputType="text"
-                    android:padding="12dp"
-                    android:textColor="@color/text_high"
-                    android:textColorHint="@color/text_low"
-                    android:textSize="14sp" />
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Input Manual"
+                        android:textColor="@color/text_high"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
-        <!-- Result Container -->
-        <FrameLayout
-            android:id="@+id/flWorkerDetailsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:visibility="gone">
+                    <EditText
+                        android:id="@+id/etRegNo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_search_modern"
+                        android:hint="Ketik No. Reg Pekerja..."
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:textColor="@color/text_high"
+                        android:textColorHint="@color/text_low"
+                        android:textSize="14sp" />
 
-            <include
-                android:id="@+id/layoutWorkerDetails"
-                layout="@layout/layout_worker_details" />
-        </FrameLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-        <!-- History Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginStart="4dp"
-            android:text="Riwayat Scan Terakhir"
-            android:textColor="@color/text_high"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            <!-- History Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="4dp"
+                android:text="Riwayat Scan Terakhir"
+                android:textColor="@color/text_high"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvScanHistory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:nestedScrollingEnabled="false" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvScanHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="80dp"
+                android:nestedScrollingEnabled="false" />
 
-    </LinearLayout>
+        </LinearLayout>
+
+    </FrameLayout>
 </androidx.core.widget.NestedScrollView>

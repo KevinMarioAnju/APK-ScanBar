@@ -13,10 +13,18 @@
             android:id="@+id/tvHistoryName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="M. SOHIB"
-            android:textColor="@color/white"
-            android:textSize="12sp"
+            android:text="NAMA PEKERJA"
+            android:textColor="@color/text_high"
+            android:textSize="14sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvHistoryContractor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KONTRAKTOR"
+            android:textColor="@color/text_low"
+            android:textSize="11sp" />
 
         <TextView
             android:id="@+id/tvHistoryTime"

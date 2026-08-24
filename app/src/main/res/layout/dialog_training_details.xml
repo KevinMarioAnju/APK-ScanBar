@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg_surface"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvTrainDetailTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="Detail Pelatihan"
+        android:textColor="@color/text_high"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:alignmentMode="alignMargins">
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="JUDUL TRAINING" />
+            <TextView android:id="@+id/tvTrainTitleInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="TANGGAL" />
+            <TextView android:id="@+id/tvTrainDateInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="JAM MULAI" />
+            <TextView android:id="@+id/tvTrainTimeInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="JAM SELESAI" />
+            <TextView android:id="@+id/tvTrainEndTimeInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="DURASI (JAM)" />
+            <TextView android:id="@+id/tvTrainHoursInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="LOKASI" />
+            <TextView android:id="@+id/tvTrainLocInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/SheetInfoItem" android:layout_marginBottom="16dp">
+            <TextView style="@style/SheetInfoLabel" android:text="HASIL" />
+            <TextView android:id="@+id/tvTrainResultInfo" style="@style/SheetInfoValue" android:text="-" />
+        </LinearLayout>
+    </GridLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btnTrainDelete"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hapus Data"
+            android:textColor="@color/alert_terracotta" />
+
+        <Button
+            android:id="@+id/btnTrainDetailClose"
+            style="@style/TealButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="Tutup" />
+    </LinearLayout>
+
+</LinearLayout>

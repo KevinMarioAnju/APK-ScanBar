@@ -27,7 +27,14 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
+            android:name=".ScanResultActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ScanBar" />
+        <activity
             android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminManagementActivity"
             android:exported="false" />
     </application>
 

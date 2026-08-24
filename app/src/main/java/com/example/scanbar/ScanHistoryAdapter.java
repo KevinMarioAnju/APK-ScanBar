@@ -28,6 +28,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ScanHistory item = historyList.get(position);
         holder.binding.tvHistoryName.setText(item.name != null ? item.name : item.regNo);
+        holder.binding.tvHistoryContractor.setText(item.contractor != null ? item.contractor : "");
         holder.binding.tvHistoryTime.setText(item.time);
         
         if (item.isFound) {

@@ -2,60 +2,59 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_card_rounded"
-    android:backgroundTint="#210000"
+    android:background="@drawable/bg_violation_card"
     android:orientation="vertical"
-    android:padding="12dp"
-    android:layout_marginBottom="8dp">
+    android:padding="20dp"
+    android:layout_marginBottom="12dp">
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/tvVioDetailType"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/tvVioDetailType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tidak menggunakan alat keselamatan kerja"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvVioDetailDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="16/01/2023"
-            android:textColor="@color/text_secondary"
-            android:textSize="10sp" />
-    </RelativeLayout>
+        android:layout_height="wrap_content"
+        android:text="Jenis Pelanggaran"
+        android:textColor="@color/alert_terracotta"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
 
     <TextView
         android:id="@+id/tvVioDetailInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Rp 1,000,000.00  Safety"
-        android:textColor="@color/text_secondary"
-        android:textSize="10sp" />
+        android:text="Denda: Rp 1.000.000"
+        android:textColor="@color/text_medium"
+        android:textSize="13sp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvVioDetailPlant"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PLANT: -"
+        android:textColor="@color/text_medium"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:id="@+id/tvVioDetailLoc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
         android:text="LOKASI: -"
-        android:textColor="@color/text_secondary"
-        android:textSize="10sp" />
+        android:textColor="@color/text_medium"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp" />
 
     <TextView
-        android:id="@+id/tvVioDetailDoc"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvVioDetailNotes"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="NO. DOK: -"
-        android:textColor="@color/text_secondary"
-        android:textSize="10sp" />
+        android:text="Catatan: -"
+        android:textColor="@color/violation_header"
+        android:textSize="11sp"
+        android:textStyle="italic"
+        android:visibility="gone" />
+
+    <!-- Hidden fields for ID binding compatibility -->
+    <View android:id="@+id/tvVioDetailDate" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
 </LinearLayout>

@@ -2,17 +2,20 @@ package com.example.scanbar;
 
 import android.graphics.Color;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.scanbar.data.Worker;
+import com.example.scanbar.data.WorkerWithStats;
 import com.example.scanbar.databinding.ItemWorkerBinding;
 import java.util.ArrayList;
 import java.util.List;
 
 public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerViewHolder> {
-    private List<Worker> workers = new ArrayList<>();
+    private List<WorkerWithStats> workerStats = new ArrayList<>();
     private OnWorkerActionListener listener;
+    private String userRole = "inspektur";
 
     public interface OnWorkerActionListener {
         void onEdit(Worker worker);
@@ -21,12 +24,13 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         void onDetail(Worker worker);
     }
 
-    public WorkerAdapter(OnWorkerActionListener listener) {
+    public WorkerAdapter(OnWorkerActionListener listener, String userRole) {
         this.listener = listener;
+        this.userRole = userRole;
     }
 
-    public void setWorkers(List<Worker> workers) {
-        this.workers = workers;
+    public void setWorkers(List<WorkerWithStats> workers) {
+        this.workerStats = workers;
         notifyDataSetChanged();
     }
 
@@ -39,31 +43,74 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
 
     @Override
     public void onBindViewHolder(@NonNull WorkerViewHolder holder, int position) {
-        Worker worker = workers.get(position);
+        WorkerWithStats stats = workerStats.get(position);
+        Worker worker = stats.worker;
+        
         holder.binding.tvRegNo.setText("REG NO: " + worker.regNo);
         holder.binding.tvName.setText(worker.name);
         holder.binding.tvContractor.setText(worker.contractor);
         holder.binding.tvPosition.setText(worker.position);
         
-        // Status binding with modern UI logic
-        if (worker.status != null && (worker.status.equalsIgnoreCase("Pelanggaran") || worker.status.contains("1") || worker.status.contains("PELANGGARAN"))) {
-            holder.binding.tvStatus.setText("ADA PELANGGARAN");
+        // --- MULTI-STATUS BADGE LOGIC ---
+        // 1. Violation Check (Formal)
+        if (stats.violationCount > 0) {
+            holder.binding.tvStatus.setText(stats.violationCount + " PELANGGARAN");
             holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pill_error);
-        } else {
+            holder.binding.tvStatus.setVisibility(View.VISIBLE);
+        } else if (stats.reprimandCount == 0) {
+            // Only show BERSIH if no violations and no reprimands
             holder.binding.tvStatus.setText("BERSIH");
             holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pill_success);
+            holder.binding.tvStatus.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.tvStatus.setVisibility(View.GONE);
+        }
+
+        // 2. Reprimand Check (Informal)
+        if (stats.reprimandCount > 0) {
+            holder.binding.tvStatusReprimand.setText(stats.reprimandCount + " TEGURAN");
+            holder.binding.tvStatusReprimand.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.tvStatusReprimand.setVisibility(View.GONE);
+        }
+
+        // 3. Training Check
+        if (stats.trainingCount > 0) {
+            holder.binding.tvStatusTraining.setText(stats.trainingCount + " TRAINING");
+            holder.binding.tvStatusTraining.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.tvStatusTraining.setVisibility(View.GONE);
+        }
+
+        // 4. Accident Check
+        if (stats.accidentCount > 0) {
+            holder.binding.tvStatusAccident.setText(stats.accidentCount + " KECELAKAAN");
+            holder.binding.tvStatusAccident.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.tvStatusAccident.setVisibility(View.GONE);
         }
         
         // Set root click for details
         holder.binding.getRoot().setOnClickListener(v -> listener.onDetail(worker));
         
+        if ("admin".equalsIgnoreCase(userRole)) {
+            holder.binding.btnEdit.setVisibility(View.VISIBLE);
+            holder.binding.btnDelete.setVisibility(View.VISIBLE);
+            holder.binding.btnViolation.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.btnEdit.setVisibility(View.GONE);
+            holder.binding.btnDelete.setVisibility(View.GONE);
+            holder.binding.btnViolation.setVisibility(View.GONE);
+        }
+
         holder.binding.btnEdit.setOnClickListener(v -> listener.onEdit(worker));
         holder.binding.btnDelete.setOnClickListener(v -> listener.onDelete(worker));
+        holder.binding.btnViolation.setOnClickListener(v -> listener.onViolation(worker));
     }
 
     @Override
     public int getItemCount() {
-        return workers.size();
+        return workerStats.size();
     }
 
     static class WorkerViewHolder extends RecyclerView.ViewHolder {

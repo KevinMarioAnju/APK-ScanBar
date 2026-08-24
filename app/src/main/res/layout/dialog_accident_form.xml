@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_surface"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tvAccidentFormTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Form Kecelakaan"
+            android:textColor="@color/text_high"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Worker Search (Similar to Training Form) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilWorkerSearch"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:hint="Cari Kontraktor (Nama/No. Reg)"
+            app:boxStrokeColor="@color/accent_teal"
+            app:hintTextColor="@color/accent_teal">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAccidentWorkerSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_high" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAccidentWorkerSearch"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvAccidentSelectedWorker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Kontraktor Terpilih: -"
+            android:textColor="@color/accent_teal"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Tanggal Kecelakaan"
+            app:helperText="Contoh: 11/08/2024"
+            app:boxStrokeColor="@color/accent_teal"
+            app:hintTextColor="@color/accent_teal">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAccidentDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:textColor="@color/text_high" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Jam Kecelakaan"
+            app:helperText="Contoh: 14:30"
+            app:boxStrokeColor="@color/accent_teal"
+            app:hintTextColor="@color/accent_teal">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAccidentTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_high" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Lokasi Kecelakaan"
+            app:boxStrokeColor="@color/accent_teal"
+            app:hintTextColor="@color/accent_teal">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAccidentLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_high" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keparahan Kecelakaan"
+            android:textSize="12sp"
+            android:textColor="@color/text_medium"
+            android:layout_marginBottom="12dp" />
+
+        <Spinner
+            android:id="@+id/spinnerAccidentSeverity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_edittext"
+            android:padding="12dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:hint="Kronologis Kecelakaan"
+            app:boxStrokeColor="@color/accent_teal"
+            app:hintTextColor="@color/accent_teal">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAccidentChronology"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:gravity="top"
+                android:textColor="@color/text_high" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnAccidentCancel"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Batal"
+                android:textColor="@color/text_medium" />
+            <Button
+                android:id="@+id/btnAccidentSave"
+                style="@style/TealButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Simpan" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

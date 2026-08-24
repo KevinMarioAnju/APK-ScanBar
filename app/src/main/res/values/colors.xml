@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ScanBar 2.0: Professional & Aesthetic Palette -->
+    <!-- ScanBar: Professional & Aesthetic Palette -->
     <color name="primary_dark">#2D3436</color>
     <color name="accent_teal">#00B894</color>
+    <color name="accent_blue">#0984E3</color>
     <color name="alert_terracotta">#E17055</color>
-    <color name="bg_main">#F9FAFB</color>
+    <color name="bg_main">#FFFFFF</color>
     <color name="bg_surface">#FFFFFF</color>
     <color name="text_high">#2D3436</color>
     <color name="text_medium">#636E72</color>
     <color name="text_low">#B2BEC3</color>
     <color name="divider_light">#F1F2F6</color>
+
+    <color name="violation_bg">#FFF5F5</color>
+    <color name="violation_stroke">#FFE3E3</color>
+    <color name="violation_header">#E17055</color>
+    <color name="reprimand_header">#F59F00</color>
+    <color name="reprimand_bg">#FFF9DB</color>
 
     <!-- Dark Mode Support -->
     <color name="bg_dark_main">#121212</color>

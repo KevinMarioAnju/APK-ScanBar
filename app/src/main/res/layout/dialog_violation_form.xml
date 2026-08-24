@@ -22,24 +22,148 @@
             android:textStyle="bold" />
 
         <LinearLayout
+            android:id="@+id/llWorkerSearchContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="16dp">
+            android:visibility="gone">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Jenis Pelanggaran"
+                android:text="Cari &amp; Pilih Kontraktor"
                 android:textSize="12sp"
                 android:textColor="@color/text_low"
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="4dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:hint="Ketik Nama atau No. Reg"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal"
+                app:startIconDrawable="@android:drawable/ic_menu_search">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etWorkerSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvWorkerSearch"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_search_modern"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvSelectedWorker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_status_pill_success"
+            android:padding="8dp"
+            android:text="Kontraktor: -"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/layoutVioSpecificFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Jenis Pelanggaran"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etVioTypeManual"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Hidden legacy spinner for compatibility -->
             <Spinner
                 android:id="@+id/spinnerVioType"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_search_modern"
-                android:paddingHorizontal="12dp" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Tanggal"
+                app:helperText="Contoh: 11/08/2024"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etVioDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Denda (Rp)"
+                app:helperText="Ketik nominal (misal: 100000)"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etVioFine"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Plant/Divisi"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etVioPlant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="No. Dokumen"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etVioDocNo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -47,11 +171,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Tanggal"
+            android:hint="Nama Penegur"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etVioDate"
+                android:id="@+id/etInspectorName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_high" />

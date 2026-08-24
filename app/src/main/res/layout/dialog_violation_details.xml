@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_surface"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tvVioDetailTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Detail Pelanggaran"
+            android:textColor="@color/text_high"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textAlignment="center" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView style="@style/SheetInfoLabel" android:text="JENIS" />
+            <TextView android:id="@+id/tvDetailType"
+                style="@style/SheetInfoValue"
+                android:text="-"
+                android:textSize="17sp"
+                android:textColor="@color/text_high" />
+
+            <View style="@style/DividerStyle" android:layout_marginVertical="16dp" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:alignmentMode="alignMargins">
+
+                <LinearLayout style="@style/SheetInfoItem">
+                    <TextView style="@style/SheetInfoLabel" android:text="TANGGAL" />
+                    <TextView android:id="@+id/tvDetailDate" style="@style/SheetInfoValue" android:text="-" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/SheetInfoItem">
+                    <TextView style="@style/SheetInfoLabel" android:text="LOKASI" />
+                    <TextView android:id="@+id/tvDetailLocation" style="@style/SheetInfoValue" android:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layoutDetailFine"
+                    style="@style/SheetInfoItem">
+                    <TextView style="@style/SheetInfoLabel" android:text="DENDA" />
+                    <TextView android:id="@+id/tvDetailFine"
+                        style="@style/SheetInfoValue"
+                        android:text="-"
+                        android:textColor="@color/alert_terracotta" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/SheetInfoItem">
+                    <TextView style="@style/SheetInfoLabel" android:text="PLANT" />
+                    <TextView android:id="@+id/tvDetailPlant" style="@style/SheetInfoValue" android:text="-" />
+                </LinearLayout>
+            </GridLayout>
+
+            <View style="@style/DividerStyle" android:layout_marginVertical="16dp" />
+
+            <TextView style="@style/SheetInfoLabel" android:text="NO. DOKUMEN / PENEGUR" />
+            <TextView android:id="@+id/tvDetailDocNo" style="@style/SheetInfoValue" android:text="-" />
+
+            <View style="@style/DividerStyle" android:layout_marginVertical="16dp" />
+
+            <TextView style="@style/SheetInfoLabel" android:text="CATATAN" />
+            <TextView android:id="@+id/tvDetailNotes"
+                style="@style/SheetInfoValue"
+                android:text="-"
+                android:textStyle="italic"
+                android:textColor="@color/text_medium" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btnDeleteVio"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hapus"
+                android:textColor="@color/alert_terracotta"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnEditVio"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                android:textColor="@color/accent_teal"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/btnCloseDetail"
+                style="@style/TealButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tutup" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
