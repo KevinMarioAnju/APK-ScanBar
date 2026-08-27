@@ -1345,6 +1345,11 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                     dialogBinding.layoutViolationFields.setVisibility(View.VISIBLE);
                     dialogBinding.layoutAdditionalViolations.setVisibility(View.VISIBLE);
                     dialogBinding.tilGlobalDocNo.setVisibility(View.VISIBLE);
+
+                    // Set default hint to "Nama Petugas" when Pelanggaran is selected
+                    if (dialogBinding.tilVioInspector != null) {
+                        dialogBinding.tilVioInspector.setHint("Nama Petugas");
+                    }
                 }
             }
 
@@ -1520,6 +1525,9 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         final Worker[] selectedWorker = {null};
 
         dialogBinding.tvVioFormTitle.setText("Tambah Pelanggaran");
+        if (dialogBinding.tilInspectorName != null) {
+            dialogBinding.tilInspectorName.setHint("Nama Petugas");
+        }
         
         // Show worker search UI in violation form
         dialogBinding.llWorkerSearchContainer.setVisibility(View.VISIBLE);
@@ -2051,11 +2059,15 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         TextView title = trainView.findViewById(R.id.tvTrainTitle);
         TextView status = trainView.findViewById(R.id.tvTrainStatus);
         TextView date = trainView.findViewById(R.id.tvTrainDate);
+        TextView code = trainView.findViewById(R.id.tvTrainCode);
+        TextView hours = trainView.findViewById(R.id.tvTrainHours);
         TextView loc = trainView.findViewById(R.id.tvTrainLocation);
 
         title.setText(t.trainingTitle);
         status.setText(t.passFail != null ? t.passFail.toUpperCase() : "PASS");
         date.setText(t.date != null ? t.date : "-");
+        code.setText(t.trainingCode != null ? t.trainingCode : "-");
+        hours.setText(t.trainingHours != null ? t.trainingHours : "-");
         loc.setText(t.trainingLocation != null ? t.trainingLocation : "-");
 
         if (t.passFail != null && t.passFail.equalsIgnoreCase("FAIL")) {

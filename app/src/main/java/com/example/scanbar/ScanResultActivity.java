@@ -540,8 +540,26 @@ public class ScanResultActivity extends AppCompatActivity {
 
     private void addTrainingItemToUi(Training t) {
         View trainView = getLayoutInflater().inflate(R.layout.item_training_detail, detailBinding.llTrainingList, false);
-        ((TextView)trainView.findViewById(R.id.tvTrainTitle)).setText(t.trainingTitle);
-        ((TextView)trainView.findViewById(R.id.tvTrainStatus)).setText(t.passFail != null ? t.passFail : "PASS");
+        TextView title = trainView.findViewById(R.id.tvTrainTitle);
+        TextView status = trainView.findViewById(R.id.tvTrainStatus);
+        TextView date = trainView.findViewById(R.id.tvTrainDate);
+        TextView code = trainView.findViewById(R.id.tvTrainCode);
+        TextView hours = trainView.findViewById(R.id.tvTrainHours);
+        TextView loc = trainView.findViewById(R.id.tvTrainLocation);
+
+        title.setText(t.trainingTitle);
+        status.setText(t.passFail != null ? t.passFail.toUpperCase() : "PASS");
+        date.setText(t.date != null ? t.date : "-");
+        code.setText(t.trainingCode != null ? t.trainingCode : "-");
+        hours.setText(t.trainingHours != null ? t.trainingHours : "-");
+        loc.setText(t.trainingLocation != null ? t.trainingLocation : "-");
+
+        if (t.passFail != null && t.passFail.equalsIgnoreCase("FAIL")) {
+            status.setBackgroundResource(R.drawable.bg_status_pill_error);
+        } else {
+            status.setBackgroundResource(R.drawable.bg_status_pill_success);
+        }
+
         trainView.setOnClickListener(v -> showTrainingDetailsDialog(t));
         detailBinding.llTrainingList.addView(trainView);
     }

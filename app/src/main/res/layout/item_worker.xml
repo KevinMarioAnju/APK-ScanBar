@@ -40,67 +40,87 @@
                 android:textColor="@color/text_low"
                 android:textSize="12sp" />
 
-            <!-- Status Badges Row -->
-            <LinearLayout
-                android:id="@+id/statusContainer"
+            <!-- Status Badges Row (Horizontal Scrollable) -->
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="start">
+                android:scrollbars="none">
 
-                <TextView
-                    android:id="@+id/tvStatus"
+                <LinearLayout
+                    android:id="@+id/statusContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill_violation"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:text="1 Pelanggaran"
-                    android:textColor="@color/semantic_error_text"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="8dp" />
+                    android:orientation="horizontal"
+                    android:gravity="start">
 
-                <TextView
-                    android:id="@+id/tvStatusReprimand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill_reprimand"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:text="1 Teguran"
-                    android:textColor="@color/semantic_warning_text"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_pill_violation"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:text="1 Pelanggaran"
+                        android:textColor="@color/semantic_error_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="8dp" />
 
-                <TextView
-                    android:id="@+id/tvStatusAccident"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill_accident"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:text="1 Kecelakaan"
-                    android:textColor="@color/semantic_error_text"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:id="@+id/tvStatusReprimand"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_pill_reprimand"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:text="1 Teguran"
+                        android:textColor="@color/semantic_warning_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="8dp" />
 
-                <TextView
-                    android:id="@+id/tvStatusClean"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill_clean"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:text="Bersih"
-                    android:textColor="@color/semantic_success_text"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvStatusAccident"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_pill_accident"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:text="1 Kecelakaan"
+                        android:textColor="@color/semantic_error_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvStatusTraining"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_pill_info"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:text="1 Pelatihan"
+                        android:textColor="#00B894"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="8dp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvStatusClean"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_pill_clean"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:text="Bersih"
+                        android:textColor="@color/semantic_success_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </HorizontalScrollView>
 
             <!-- Data Grid 2 Column -->
             <GridLayout
@@ -211,7 +231,6 @@
         </GridLayout>
 
         <!-- Hidden fields for compatibility -->
-        <TextView android:id="@+id/tvStatusTraining" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/tvEventDate" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/tvVioType" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/tvFine" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
