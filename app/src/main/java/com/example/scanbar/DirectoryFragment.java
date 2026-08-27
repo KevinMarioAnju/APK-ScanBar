@@ -735,45 +735,10 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
 
         // --- Date Format Logic ---
-        dialogBinding.etAccidentDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                }
-                current = formatted;
-                dialogBinding.etAccidentDate.setText(current);
-                dialogBinding.etAccidentDate.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupDateFormat(dialogBinding.etAccidentDate);
 
         // --- Time Format Logic ---
-        dialogBinding.etAccidentTime.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
-                }
-                current = formatted;
-                dialogBinding.etAccidentTime.setText(current);
-                dialogBinding.etAccidentTime.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupTimeFormat(dialogBinding.etAccidentTime);
 
         dialogBinding.btnAccidentSave.setOnClickListener(v -> {
             String date = dialogBinding.etAccidentDate.getText().toString();
@@ -850,45 +815,10 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
 
         // --- Date Format Logic ---
-        dialogBinding.etAccidentDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                }
-                current = formatted;
-                dialogBinding.etAccidentDate.setText(current);
-                dialogBinding.etAccidentDate.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupDateFormat(dialogBinding.etAccidentDate);
 
         // --- Time Format Logic ---
-        dialogBinding.etAccidentTime.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
-                }
-                current = formatted;
-                dialogBinding.etAccidentTime.setText(current);
-                dialogBinding.etAccidentTime.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupTimeFormat(dialogBinding.etAccidentTime);
 
         dialogBinding.btnAccidentSave.setOnClickListener(v -> {
             if (selectedWorker[0] == null) {
@@ -971,65 +901,11 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.btnTrainingCancel.setOnClickListener(v -> dialog.dismiss());
 
         // --- Date Format Logic ---
-        dialogBinding.etTrainingDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                }
-                current = formatted;
-                dialogBinding.etTrainingDate.setText(current);
-                dialogBinding.etTrainingDate.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupDateFormat(dialogBinding.etTrainingDate);
 
-        // --- Time Format Logic (Jam Mulai) ---
-        dialogBinding.etTrainingTime.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
-                }
-                current = formatted;
-                dialogBinding.etTrainingTime.setText(current);
-                dialogBinding.etTrainingTime.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
-
-        // --- Time Format Logic (Jam Selesai) ---
-        dialogBinding.etTrainingEndTime.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
-                }
-                current = formatted;
-                dialogBinding.etTrainingEndTime.setText(current);
-                dialogBinding.etTrainingEndTime.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        // --- Time Format Logic ---
+        setupTimeFormat(dialogBinding.etTrainingTime);
+        setupTimeFormat(dialogBinding.etTrainingEndTime);
 
         dialogBinding.btnTrainingSave.setOnClickListener(v -> {
             if (selectedWorker[0] == null) {
@@ -1241,12 +1117,6 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         
         AlertDialog dialog = builder.create();
 
-        // Setup Spinner Status
-        String[] statuses = {"Bersih", "Pelanggaran"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, statuses);
-        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        dialogBinding.spinnerStatus.setAdapter(statusAdapter);
-
         if (worker != null) {
             dialogBinding.tvFormTitle.setText("Edit Kontraktor — " + worker.name);
             dialogBinding.etRegNo.setText(worker.regNo);
@@ -1254,109 +1124,11 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             dialogBinding.etContractor.setText(worker.contractor);
             dialogBinding.etPosition.setText(worker.position);
             dialogBinding.etWorkerPlant.setText(worker.plantDiv);
-
-            // Set status spinner
-            int statusPos = 0;
-            if (worker.status != null && (worker.status.equalsIgnoreCase("Pelanggaran") || worker.status.contains("1") || worker.status.contains("PELANGGARAN"))) {
-                statusPos = 1;
-            }
-            dialogBinding.spinnerStatus.setSelection(statusPos);
-            
-            dialogBinding.etEventDate.setText(worker.dateOfEvent);
-            dialogBinding.etVioType.setText(worker.violationType);
-            dialogBinding.etFine.setText(worker.fineAmount);
-            dialogBinding.etPlant.setText(worker.plantDiv);
-            dialogBinding.etVioDocNo.setText(worker.documentNo);
-            dialogBinding.etVioInspector.setText(worker.inspectorName);
-            dialogBinding.etLocation.setText(worker.eventLocation);
-            dialogBinding.etGlobalDocNo.setText(worker.documentNo);
-
-            // Set dynamic hint based on initial type
-            if (dialogBinding.tilVioInspector != null) {
-                boolean isRep = worker.violationType != null && worker.violationType.toLowerCase().contains("teguran");
-                dialogBinding.tilVioInspector.setHint(isRep ? "Nama Penegur" : "Nama Petugas");
-            }
-            
-            // Dynamic hint as user types
-            dialogBinding.etVioType.addTextChangedListener(new TextWatcher() {
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    boolean isRep = s.toString().toLowerCase().contains("teguran");
-                    if (dialogBinding.tilVioInspector != null) {
-                        dialogBinding.tilVioInspector.setHint(isRep ? "Nama Penegur" : "Nama Petugas");
-                    }
-                }
-                @Override public void afterTextChanged(Editable s) {}
-            });
-            
-            // --- Date Format Logic for Event Date ---
-            dialogBinding.etEventDate.addTextChangedListener(new TextWatcher() {
-                private String current = "";
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (s.toString().equals(current)) return;
-                    String clean = s.toString().replaceAll("[^\\d]", "");
-                    String formatted = "";
-                    int cl = clean.length();
-                    if (cl > 0) {
-                        if (cl <= 2) formatted = clean;
-                        else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                        else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                    }
-                    current = formatted;
-                    dialogBinding.etEventDate.setText(current);
-                    dialogBinding.etEventDate.setSelection(current.length());
-                }
-                @Override public void afterTextChanged(Editable s) {}
-            });
-
-            // Load additional violations
-            Executors.newSingleThreadExecutor().execute(() -> {
-                List<Violation> violations = workerDao.getViolationsSync(worker.regNo);
-                getActivity().runOnUiThread(() -> {
-                    for (Violation v : violations) {
-                        // Avoid displaying the violation that is already shown in the main card
-                        // (Usually the first one if it matches the worker's direct violation fields)
-                        boolean isDuplicate = v.type != null && v.type.equals(worker.violationType) && 
-                                            v.date != null && v.date.equals(worker.dateOfEvent);
-                        
-                        if (!isDuplicate) {
-                            addViolationFieldBlock(dialogBinding.layoutAdditionalViolations, v);
-                        }
-                    }
-                });
-            });
             
             dialogBinding.btnSave.setText("Simpan Perubahan");
         }
 
         dialogBinding.btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        // Toggle violation fields visibility based on status
-        dialogBinding.spinnerStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = parent.getItemAtPosition(position).toString();
-                if (selected.equalsIgnoreCase("Bersih")) {
-                    dialogBinding.layoutViolationFields.setVisibility(View.GONE);
-                    dialogBinding.layoutAdditionalViolations.setVisibility(View.GONE);
-                    dialogBinding.tilGlobalDocNo.setVisibility(View.GONE);
-                } else {
-                    dialogBinding.layoutViolationFields.setVisibility(View.VISIBLE);
-                    dialogBinding.layoutAdditionalViolations.setVisibility(View.VISIBLE);
-                    dialogBinding.tilGlobalDocNo.setVisibility(View.VISIBLE);
-
-                    // Set default hint to "Nama Petugas" when Pelanggaran is selected
-                    if (dialogBinding.tilVioInspector != null) {
-                        dialogBinding.tilVioInspector.setHint("Nama Petugas");
-                    }
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
-
 
         dialogBinding.btnSave.setOnClickListener(v -> {
             String regNo = dialogBinding.etRegNo.getText().toString();
@@ -1365,74 +1137,12 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             String position = dialogBinding.etPosition.getText().toString();
             String workerPlant = dialogBinding.etWorkerPlant.getText().toString();
             
-            // Collect main violation fields
-            String eventDate = dialogBinding.etEventDate.getText().toString();
-            String vioType = dialogBinding.etVioType.getText().toString();
-            String fine = dialogBinding.etFine.getText().toString();
-            String plant = dialogBinding.etPlant.getText().toString();
-            String mainVioDocNo = dialogBinding.etVioDocNo.getText().toString();
-            String mainVioInspector = dialogBinding.etVioInspector.getText().toString();
-            String location = dialogBinding.etLocation.getText().toString();
-            String docNo = dialogBinding.etGlobalDocNo.getText().toString();
-
             if (regNo.isEmpty() || name.isEmpty()) return;
-
-            // Collect additional violations FROM UI THREAD
-            List<Violation> additionalViolations = new ArrayList<>();
-            int formalViolationCount = 0;
-            
-            // Check main violation fields first
-            boolean hasMainViolation = !vioType.isEmpty() && !vioType.equals("-");
-            if (hasMainViolation) {
-                if (!vioType.toLowerCase().contains("teguran")) {
-                    formalViolationCount++;
-                }
-                Violation mainVio = new Violation(regNo, vioType, eventDate, location, "");
-                mainVio.fine = fine;
-                mainVio.plant = plant;
-                mainVio.docNo = mainVioDocNo;
-                mainVio.officer = mainVioInspector;
-                additionalViolations.add(mainVio);
-            }
-
-            int childCount = dialogBinding.layoutAdditionalViolations.getChildCount();
-            for (int i = 0; i < childCount; i++) {
-                View child = dialogBinding.layoutAdditionalViolations.getChildAt(i);
-                ItemViolationFormBinding vioBinding = ItemViolationFormBinding.bind(child);
-                
-                String vType = vioBinding.etVioType.getText().toString();
-                if (vType != null && !vType.isEmpty() && !vType.equals("-")) {
-                    if (!vType.toLowerCase().contains("teguran")) {
-                        formalViolationCount++;
-                    }
-
-                    Violation violationItem = new Violation(regNo, 
-                        vType,
-                        vioBinding.etVioDate.getText().toString(),
-                        vioBinding.etVioLocation.getText().toString(),
-                        "" // notes
-                    );
-                    violationItem.fine = vioBinding.etVioFine.getText().toString();
-                    violationItem.plant = vioBinding.etVioPlant.getText().toString();
-                    violationItem.docNo = vioBinding.etVioDocNo.getText().toString();
-                    violationItem.officer = vioBinding.etVioInspector.getText().toString();
-                    additionalViolations.add(violationItem);
-                }
-            }
-
-            if (formalViolationCount > 5) {
-                Toast.makeText(getContext(), "Batas maksimal 5 pelanggaran tercapai", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            // Determine final status based on whether ANY violation/reprimand exists
-            final String finalStatus = (formalViolationCount > 0) ? "Pelanggaran" : 
-                                   (!additionalViolations.isEmpty() ? "Teguran" : "Bersih");
 
             Executors.newSingleThreadExecutor().execute(() -> {
                 Worker targetWorker = worker;
                 if (targetWorker == null) {
-                    targetWorker = new Worker(regNo, name, contractor, position, finalStatus);
+                    targetWorker = new Worker(regNo, name, contractor, position, "Bersih");
                     targetWorker.dataSource = "Input di HP";
                     targetWorker.plantDiv = workerPlant;
                 } else {
@@ -1441,35 +1151,15 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                     targetWorker.contractor = contractor;
                     targetWorker.position = position;
                     targetWorker.plantDiv = workerPlant;
-                    targetWorker.status = finalStatus;
                     targetWorker.dataSource = "Input di HP";
                 }
                 
-                targetWorker.dateOfEvent = eventDate;
-                targetWorker.violationType = vioType;
-                targetWorker.fineAmount = fine;
-                // If there's a specific violation plant, we can use it, but workerPlant is the primary one for the profile
-                if (plant != null && !plant.isEmpty() && !plant.equals("-")) {
-                    targetWorker.plantDiv = plant;
-                } else {
-                    targetWorker.plantDiv = workerPlant;
-                }
-                targetWorker.eventLocation = location;
-                targetWorker.documentNo = mainVioDocNo;
-                targetWorker.inspectorName = mainVioInspector;
-
                 if (worker == null) {
                     workerDao.insert(targetWorker);
                 } else {
                     workerDao.update(targetWorker);
                 }
 
-                // Handle additional violations
-                workerDao.deleteViolationsByWorker(regNo);
-                for (Violation addVio : additionalViolations) {
-                    workerDao.insertViolation(addVio);
-                }
-                
                 getActivity().runOnUiThread(() -> {
                     Toast.makeText(getContext(), worker == null ? "Kontraktor berhasil ditambahkan" : "Data Kontraktor berhasil diperbarui", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -1558,25 +1248,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         });
 
         // --- Date Format Logic ---
-        dialogBinding.etVioDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                }
-                current = formatted;
-                dialogBinding.etVioDate.setText(current);
-                dialogBinding.etVioDate.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupDateFormat(dialogBinding.etVioDate);
 
         // --- Fine Format Logic ---
         dialogBinding.etVioFine.addTextChangedListener(new TextWatcher() {
@@ -1684,25 +1356,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
 
         // --- 1. Kolom Tanggal ---
-        dialogBinding.etVioDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                }
-                current = formatted;
-                dialogBinding.etVioDate.setText(current);
-                dialogBinding.etVioDate.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupDateFormat(dialogBinding.etVioDate);
 
         // --- 2. Kolom Denda ---
         dialogBinding.etVioFine.addTextChangedListener(new TextWatcher() {
@@ -2031,7 +1685,13 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         if ("admin".equalsIgnoreCase(userRole)) {
             detailsBinding.btnAccidentDelete.setVisibility(View.VISIBLE);
+            detailsBinding.btnEditAccident.setVisibility(View.VISIBLE);
         }
+
+        detailsBinding.btnEditAccident.setOnClickListener(v -> {
+            dialog.dismiss();
+            showEditAccidentForm(a);
+        });
 
         detailsBinding.btnAccidentDelete.setOnClickListener(v -> {
             new AlertDialog.Builder(getContext())
@@ -2095,9 +1755,16 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         if ("admin".equalsIgnoreCase(userRole)) {
             detailsBinding.btnTrainDelete.setVisibility(View.VISIBLE);
+            detailsBinding.btnEditTrain.setVisibility(View.VISIBLE);
         } else {
             detailsBinding.btnTrainDelete.setVisibility(View.GONE);
+            detailsBinding.btnEditTrain.setVisibility(View.GONE);
         }
+
+        detailsBinding.btnEditTrain.setOnClickListener(v -> {
+            dialog.dismiss();
+            showEditTrainingForm(t);
+        });
 
         detailsBinding.btnTrainDelete.setOnClickListener(v -> {
             new AlertDialog.Builder(getContext())
@@ -2118,6 +1785,178 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         detailsBinding.btnTrainDetailClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+    }
+
+    private void showEditTrainingForm(Training t) {
+        com.example.scanbar.databinding.DialogTrainingFormBinding dialogBinding = 
+                com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+
+        // Setup UI for edit mode
+        dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
+        dialogBinding.tvSelectedWorker.setText("Pekerja: " + t.workerRegNo);
+
+        // Hide search components
+        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
+        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+        // Find and hide the "Cari & Pilih Kontraktor" label (it's the first TextView before search box)
+        ViewGroup parent = (ViewGroup) dialogBinding.etWorkerSearch.getParent();
+        if (parent != null) {
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                View child = parent.getChildAt(i);
+                if (child instanceof TextView && ((TextView) child).getText().toString().contains("Cari")) {
+                    child.setVisibility(View.GONE);
+                    break;
+                }
+            }
+        }
+
+        // Setup Pass/Fail Spinner
+        String[] options = {"PASS", "FAIL"};
+        ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);
+        pfAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerPassFail.setAdapter(pfAdapter);
+
+        // Pre-fill values
+        dialogBinding.etTrainingTitle.setText(t.trainingTitle);
+        dialogBinding.etTrainingDate.setText(t.date);
+        dialogBinding.etTrainingTime.setText(t.time);
+        dialogBinding.etTrainingEndTime.setText(t.endTime);
+        dialogBinding.etTrainingLocation.setText(t.trainingLocation);
+        if (t.passFail != null) {
+            int pos = t.passFail.equalsIgnoreCase("PASS") ? 0 : 1;
+            dialogBinding.spinnerPassFail.setSelection(pos);
+        }
+
+        setupDateFormat(dialogBinding.etTrainingDate);
+        setupTimeFormat(dialogBinding.etTrainingTime);
+        setupTimeFormat(dialogBinding.etTrainingEndTime);
+
+        dialogBinding.btnTrainingCancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnTrainingSave.setOnClickListener(v -> {
+            t.trainingTitle = dialogBinding.etTrainingTitle.getText().toString();
+            t.date = dialogBinding.etTrainingDate.getText().toString();
+            t.time = dialogBinding.etTrainingTime.getText().toString();
+            t.endTime = dialogBinding.etTrainingEndTime.getText().toString();
+            t.trainingLocation = dialogBinding.etTrainingLocation.getText().toString();
+            t.passFail = dialogBinding.spinnerPassFail.getSelectedItem().toString();
+            t.trainingHours = calculateDuration(t.time, t.endTime);
+
+            if (t.trainingTitle.isEmpty()) {
+                Toast.makeText(getContext(), "Judul training harus diisi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                workerDao.updateTraining(t);
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Data Training berhasil diperbarui", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        dialog.show();
+    }
+
+    private void showEditAccidentForm(Accident a) {
+        DialogAccidentFormBinding dialogBinding = DialogAccidentFormBinding.inflate(getLayoutInflater());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+
+        dialogBinding.tvAccidentFormTitle.setText("Edit Kecelakaan");
+        dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
+        dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
+        dialogBinding.tvAccidentSelectedWorker.setText("Pekerja: " + a.workerRegNo);
+
+        String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
+        ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);
+        sevAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerAccidentSeverity.setAdapter(sevAdapter);
+
+        dialogBinding.etAccidentDate.setText(a.date);
+        dialogBinding.etAccidentTime.setText(a.time);
+        dialogBinding.etAccidentLocation.setText(a.location);
+        dialogBinding.etAccidentChronology.setText(a.chronology);
+        if (a.severity != null) {
+            for (int i = 0; i < options.length; i++) {
+                if (a.severity.equalsIgnoreCase(options[i])) {
+                    dialogBinding.spinnerAccidentSeverity.setSelection(i);
+                    break;
+                }
+            }
+        }
+
+        setupDateFormat(dialogBinding.etAccidentDate);
+        setupTimeFormat(dialogBinding.etAccidentTime);
+
+        dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnAccidentSave.setOnClickListener(v -> {
+            a.date = dialogBinding.etAccidentDate.getText().toString();
+            a.time = dialogBinding.etAccidentTime.getText().toString();
+            a.location = dialogBinding.etAccidentLocation.getText().toString();
+            a.severity = dialogBinding.spinnerAccidentSeverity.getSelectedItem().toString();
+            a.chronology = dialogBinding.etAccidentChronology.getText().toString();
+
+            if (a.date.isEmpty() || a.chronology.isEmpty()) {
+                Toast.makeText(getContext(), "Tanggal dan kronologis harus diisi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                workerDao.updateAccident(a);
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Data Kecelakaan berhasil diperbarui", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        dialog.show();
+    }
+
+    private void setupDateFormat(android.widget.EditText et) {
+        et.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                }
+                current = formatted;
+                et.setText(current);
+                et.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void setupTimeFormat(android.widget.EditText et) {
+        et.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
+                }
+                current = formatted;
+                et.setText(current);
+                et.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void addViolationItemToUi(ViewGroup container, Violation v) {

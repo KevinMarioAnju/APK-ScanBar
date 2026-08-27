@@ -111,16 +111,13 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         if ("admin".equalsIgnoreCase(userRole)) {
             holder.binding.btnEdit.setVisibility(View.VISIBLE);
             holder.binding.btnDelete.setVisibility(View.VISIBLE);
-            holder.binding.btnViolation.setVisibility(View.VISIBLE);
         } else {
             holder.binding.btnEdit.setVisibility(View.GONE);
             holder.binding.btnDelete.setVisibility(View.GONE);
-            holder.binding.btnViolation.setVisibility(View.GONE);
         }
 
         holder.binding.btnEdit.setOnClickListener(v -> listener.onEdit(worker));
         holder.binding.btnDelete.setOnClickListener(v -> listener.onDelete(worker));
-        holder.binding.btnViolation.setOnClickListener(v -> listener.onViolation(worker));
     }
 
     @Override

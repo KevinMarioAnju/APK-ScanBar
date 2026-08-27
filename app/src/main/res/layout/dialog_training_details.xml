@@ -75,6 +75,15 @@
             android:textColor="@color/alert_terracotta" />
 
         <Button
+            android:id="@+id/btnEditTrain"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit"
+            android:textColor="@color/accent_teal"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/btnTrainDetailClose"
             style="@style/TealButtonStyle"
             android:layout_width="wrap_content"

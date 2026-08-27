@@ -568,15 +568,116 @@ public class ScanResultActivity extends AppCompatActivity {
         DialogTrainingDetailsBinding detailsBinding = DialogTrainingDetailsBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(this).setView(detailsBinding.getRoot()).create();
         detailsBinding.tvTrainTitleInfo.setText(t.trainingTitle);
-        detailsBinding.tvTrainDateInfo.setText(t.date);
+        detailsBinding.tvTrainDateInfo.setText(t.date != null ? t.date : "-");
+        detailsBinding.tvTrainTimeInfo.setText(t.time != null ? t.time : "-");
+        detailsBinding.tvTrainEndTimeInfo.setText(t.endTime != null ? t.endTime : "-");
+        detailsBinding.tvTrainHoursInfo.setText(t.trainingHours != null ? t.trainingHours : "-");
+        detailsBinding.tvTrainLocInfo.setText(t.trainingLocation != null ? t.trainingLocation : "-");
+        detailsBinding.tvTrainResultInfo.setText(t.passFail != null ? t.passFail : "-");
+
+        if ("admin".equalsIgnoreCase(userRole)) {
+            detailsBinding.btnTrainDelete.setVisibility(View.VISIBLE);
+            detailsBinding.btnEditTrain.setVisibility(View.VISIBLE);
+        } else {
+            detailsBinding.btnTrainDelete.setVisibility(View.GONE);
+            detailsBinding.btnEditTrain.setVisibility(View.GONE);
+        }
+
+        detailsBinding.btnEditTrain.setOnClickListener(v -> {
+            dialog.dismiss();
+            showEditTrainingForm(t);
+        });
+
+        detailsBinding.btnTrainDelete.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                .setTitle("Hapus Data Training")
+                .setMessage("Apakah Anda yakin ingin menghapus data training ini?")
+                .setPositiveButton("Hapus", (d, w) -> {
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        AppDatabase.getDatabase(this).workerDao().deleteTraining(t);
+                        runOnUiThread(() -> dialog.dismiss());
+                    });
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+        });
+
         detailsBinding.btnTrainDetailClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
+    private void showEditTrainingForm(Training t) {
+        com.example.scanbar.databinding.DialogTrainingFormBinding dialogBinding = 
+                com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(dialogBinding.getRoot()).create();
+
+        dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
+        dialogBinding.tvSelectedWorker.setText("Pekerja: " + t.workerRegNo);
+        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
+        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+
+        String[] options = {"PASS", "FAIL"};
+        ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
+        pfAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerPassFail.setAdapter(pfAdapter);
+
+        dialogBinding.etTrainingTitle.setText(t.trainingTitle);
+        dialogBinding.etTrainingDate.setText(t.date);
+        dialogBinding.etTrainingTime.setText(t.time);
+        dialogBinding.etTrainingEndTime.setText(t.endTime);
+        dialogBinding.etTrainingLocation.setText(t.trainingLocation);
+        if (t.passFail != null) {
+            int pos = t.passFail.equalsIgnoreCase("PASS") ? 0 : 1;
+            dialogBinding.spinnerPassFail.setSelection(pos);
+        }
+
+        setupDateFormat(dialogBinding.etTrainingDate);
+        setupTimeFormat(dialogBinding.etTrainingTime);
+        setupTimeFormat(dialogBinding.etTrainingEndTime);
+
+        dialogBinding.btnTrainingCancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnTrainingSave.setOnClickListener(v -> {
+            t.trainingTitle = dialogBinding.etTrainingTitle.getText().toString();
+            t.date = dialogBinding.etTrainingDate.getText().toString();
+            t.time = dialogBinding.etTrainingTime.getText().toString();
+            t.endTime = dialogBinding.etTrainingEndTime.getText().toString();
+            t.trainingLocation = dialogBinding.etTrainingLocation.getText().toString();
+            t.passFail = dialogBinding.spinnerPassFail.getSelectedItem().toString();
+            t.trainingHours = calculateDuration(t.time, t.endTime);
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                AppDatabase.getDatabase(this).workerDao().updateTraining(t);
+                runOnUiThread(() -> dialog.dismiss());
+            });
+        });
+        dialog.show();
+    }
+
+    private String calculateDuration(String start, String end) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH.mm", Locale.getDefault());
+            Date dateStart = sdf.parse(start.replace(":", "."));
+            Date dateEnd = sdf.parse(end.replace(":", "."));
+            if (dateStart != null && dateEnd != null) {
+                long diff = dateEnd.getTime() - dateStart.getTime();
+                if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                double hours = (double) diff / (1000 * 60 * 60);
+                return String.format(Locale.getDefault(), "%.1f", hours);
+            }
+        } catch (Exception e) {}
+        return "-";
+    }
+
     private void addAccidentItemToUi(Accident a) {
         View accView = getLayoutInflater().inflate(R.layout.item_accident_detail, detailBinding.llAccidentList, false);
-        ((TextView)accView.findViewById(R.id.tvAccidentDate)).setText(a.date);
-        ((TextView)accView.findViewById(R.id.tvAccidentSeverity)).setText(a.severity);
+        TextView date = accView.findViewById(R.id.tvAccidentDate);
+        TextView severity = accView.findViewById(R.id.tvAccidentSeverity);
+        TextView location = accView.findViewById(R.id.tvAccidentLocation);
+
+        date.setText(a.date != null ? a.date : "-");
+        severity.setText(a.severity != null ? a.severity : "-");
+        location.setText(a.location != null ? a.location : "-");
+
         accView.setOnClickListener(v -> showAccidentDetailsDialog(a));
         detailBinding.llAccidentList.addView(accView);
     }
@@ -584,9 +685,126 @@ public class ScanResultActivity extends AppCompatActivity {
     private void showAccidentDetailsDialog(Accident a) {
         DialogAccidentDetailsBinding detailsBinding = DialogAccidentDetailsBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(this).setView(detailsBinding.getRoot()).create();
-        detailsBinding.tvAccidentDetailSeverity.setText(a.severity);
-        detailsBinding.tvAccidentDetailChronology.setText(a.chronology);
+        detailsBinding.tvAccidentDetailSeverity.setText(a.severity != null ? a.severity : "-");
+        detailsBinding.tvAccidentDetailDate.setText(a.date != null ? a.date : "-");
+        detailsBinding.tvAccidentDetailTime.setText(a.time != null ? a.time : "-");
+        detailsBinding.tvAccidentDetailLocation.setText(a.location != null ? a.location : "-");
+        detailsBinding.tvAccidentDetailChronology.setText(a.chronology != null ? a.chronology : "-");
+
+        if ("admin".equalsIgnoreCase(userRole)) {
+            detailsBinding.btnAccidentDelete.setVisibility(View.VISIBLE);
+            detailsBinding.btnEditAccident.setVisibility(View.VISIBLE);
+        }
+
+        detailsBinding.btnEditAccident.setOnClickListener(v -> {
+            dialog.dismiss();
+            showEditAccidentForm(a);
+        });
+
+        detailsBinding.btnAccidentDelete.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                .setTitle("Hapus Data Kecelakaan")
+                .setMessage("Apakah Anda yakin ingin menghapus data kecelakaan ini?")
+                .setPositiveButton("Hapus", (d, w) -> {
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        AppDatabase.getDatabase(this).workerDao().deleteAccident(a);
+                        runOnUiThread(() -> dialog.dismiss());
+                    });
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+        });
+
         detailsBinding.btnAccidentClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+    }
+
+    private void showEditAccidentForm(Accident a) {
+        DialogAccidentFormBinding dialogBinding = DialogAccidentFormBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(dialogBinding.getRoot()).create();
+
+        dialogBinding.tvAccidentFormTitle.setText("Edit Kecelakaan");
+        dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
+        dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
+        dialogBinding.tvAccidentSelectedWorker.setText("Pekerja: " + a.workerRegNo);
+
+        String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
+        ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
+        sevAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerAccidentSeverity.setAdapter(sevAdapter);
+
+        dialogBinding.etAccidentDate.setText(a.date);
+        dialogBinding.etAccidentTime.setText(a.time);
+        dialogBinding.etAccidentLocation.setText(a.location);
+        dialogBinding.etAccidentChronology.setText(a.chronology);
+        if (a.severity != null) {
+            for (int i = 0; i < options.length; i++) {
+                if (a.severity.equalsIgnoreCase(options[i])) {
+                    dialogBinding.spinnerAccidentSeverity.setSelection(i);
+                    break;
+                }
+            }
+        }
+
+        setupDateFormat(dialogBinding.etAccidentDate);
+        setupTimeFormat(dialogBinding.etAccidentTime);
+
+        dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnAccidentSave.setOnClickListener(v -> {
+            a.date = dialogBinding.etAccidentDate.getText().toString();
+            a.time = dialogBinding.etAccidentTime.getText().toString();
+            a.location = dialogBinding.etAccidentLocation.getText().toString();
+            a.severity = dialogBinding.spinnerAccidentSeverity.getSelectedItem().toString();
+            a.chronology = dialogBinding.etAccidentChronology.getText().toString();
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                AppDatabase.getDatabase(this).workerDao().updateAccident(a);
+                runOnUiThread(() -> dialog.dismiss());
+            });
+        });
+        dialog.show();
+    }
+
+    private void setupDateFormat(android.widget.EditText et) {
+        et.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                }
+                current = formatted;
+                et.setText(current);
+                et.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void setupTimeFormat(android.widget.EditText et) {
+        et.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
+                }
+                current = formatted;
+                et.setText(current);
+                et.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 }
