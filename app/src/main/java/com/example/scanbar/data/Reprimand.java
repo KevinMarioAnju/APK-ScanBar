@@ -4,30 +4,27 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "trainings",
+@Entity(tableName = "reprimands",
         foreignKeys = @ForeignKey(entity = Worker.class,
                 parentColumns = "regNo",
                 childColumns = "workerRegNo",
                 onDelete = ForeignKey.CASCADE))
-public class Training {
+public class Reprimand {
     @PrimaryKey(autoGenerate = true)
     public int id;
-
+    
     public String workerRegNo;
-    public String workerName; // Add this
-    public String trainingCode; // Add this
-    public String trainingTitle;
     public String date;
-    public String time;
-    public String endTime;
-    public String trainingHours;
-    public String trainingLocation;
-    public String passFail;
-    public String dataSource; // Add this
+    public String location;
+    public String notes;
+    public String officer;
+    public String dataSource;
 
-    public Training(String workerRegNo, String trainingTitle, String date) {
+    public Reprimand(String workerRegNo, String date, String location, String notes, String officer) {
         this.workerRegNo = workerRegNo;
-        this.trainingTitle = trainingTitle;
         this.date = date;
+        this.location = location;
+        this.notes = notes;
+        this.officer = officer;
     }
 }

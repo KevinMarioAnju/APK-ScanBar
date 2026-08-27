@@ -51,43 +51,58 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         holder.binding.tvContractor.setText(worker.contractor);
         holder.binding.tvPosition.setText(worker.position);
         
-        // --- MULTI-STATUS BADGE LOGIC ---
-        // 1. Violation Check (Formal)
+        // --- MULTI-STATUS BADGE LOGIC (Refined UX) ---
+        boolean hasCriticalInfo = false;
+
+        // 1. Violation Check
         if (stats.violationCount > 0) {
-            holder.binding.tvStatus.setText(stats.violationCount + " PELANGGARAN");
-            holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pill_error);
+            holder.binding.tvStatus.setText(stats.violationCount + " Pelanggaran");
+            holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pill_violation);
+            holder.binding.tvStatus.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_error_text));
             holder.binding.tvStatus.setVisibility(View.VISIBLE);
-        } else if (stats.reprimandCount == 0) {
-            // Only show BERSIH if no violations and no reprimands
-            holder.binding.tvStatus.setText("BERSIH");
-            holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pill_success);
-            holder.binding.tvStatus.setVisibility(View.VISIBLE);
+            hasCriticalInfo = true;
         } else {
             holder.binding.tvStatus.setVisibility(View.GONE);
         }
 
-        // 2. Reprimand Check (Informal)
+        // 2. Reprimand Check
         if (stats.reprimandCount > 0) {
-            holder.binding.tvStatusReprimand.setText(stats.reprimandCount + " TEGURAN");
+            holder.binding.tvStatusReprimand.setText(stats.reprimandCount + " Teguran");
+            holder.binding.tvStatusReprimand.setBackgroundResource(R.drawable.bg_status_pill_reprimand);
+            holder.binding.tvStatusReprimand.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_warning_text));
             holder.binding.tvStatusReprimand.setVisibility(View.VISIBLE);
+            hasCriticalInfo = true;
         } else {
             holder.binding.tvStatusReprimand.setVisibility(View.GONE);
+        }
+
+        // 3. Accident Check
+        if (stats.accidentCount > 0) {
+            holder.binding.tvStatusAccident.setText(stats.accidentCount + " Kecelakaan");
+            holder.binding.tvStatusAccident.setBackgroundResource(R.drawable.bg_status_pill_accident);
+            holder.binding.tvStatusAccident.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_error_text));
+            holder.binding.tvStatusAccident.setVisibility(View.VISIBLE);
+            hasCriticalInfo = true;
+        } else {
+            holder.binding.tvStatusAccident.setVisibility(View.GONE);
+        }
+
+        // 4. Clean Status
+        if (!hasCriticalInfo) {
+            holder.binding.tvStatusClean.setVisibility(View.VISIBLE);
+            holder.binding.tvStatusClean.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_success_text));
+        } else {
+            holder.binding.tvStatusClean.setVisibility(View.GONE);
         }
 
         // 3. Training Check
         if (stats.trainingCount > 0) {
             holder.binding.tvStatusTraining.setText(stats.trainingCount + " TRAINING");
+            holder.binding.tvStatusTraining.setBackgroundResource(R.drawable.bg_status_pill_info);
+            holder.binding.tvStatusTraining.setTextColor(Color.parseColor("#00B894"));
             holder.binding.tvStatusTraining.setVisibility(View.VISIBLE);
         } else {
             holder.binding.tvStatusTraining.setVisibility(View.GONE);
-        }
-
-        // 4. Accident Check
-        if (stats.accidentCount > 0) {
-            holder.binding.tvStatusAccident.setText(stats.accidentCount + " KECELAKAAN");
-            holder.binding.tvStatusAccident.setVisibility(View.VISIBLE);
-        } else {
-            holder.binding.tvStatusAccident.setVisibility(View.GONE);
         }
         
         // Set root click for details

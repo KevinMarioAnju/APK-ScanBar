@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Worker.class, Violation.class, User.class, Training.class, Accident.class}, version = 19)
+@Database(entities = {Worker.class, Violation.class, User.class, Training.class, Accident.class, Reprimand.class}, version = 24)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract WorkerDao workerDao();
     public abstract UserDao userDao();
@@ -78,11 +78,12 @@ public abstract class AppDatabase extends RoomDatabase {
                 return;
             }
 
-            Log.d("AppDatabase", "Worker asset changed. Refreshing database from asset file.");
-            dao.deleteAllViolations();
-            dao.deleteAllTrainings();
-            dao.deleteAllAccidents();
-            dao.deleteAllWorkers();
+            Log.d("AppDatabase", "Worker asset changed. Refreshing Master Data while preserving local data.");
+            dao.deleteMasterViolations();
+            dao.deleteMasterReprimands();
+            dao.deleteMasterTrainings();
+            dao.deleteMasterAccidents();
+            dao.deleteMasterWorkers();
             prePopulateDatabase(context, dao);
             prefs.edit().putString(LAST_WORKER_ASSET_HASH, currentHash).apply();
         } catch (Exception e) {
@@ -194,6 +195,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
         if (!regNo.isEmpty() || !name.isEmpty()) {
             Worker worker = new Worker(regNo, name, contractor, position, finalStatus);
+            worker.dataSource = "Master Data";
 
             worker.contractorCode = obj.optString("Contractor Code", obj.optString("Kode Kontraktor", ""));
             worker.gender = obj.optString("Gender", obj.optString("GENDER / USIA", ""));
@@ -221,6 +223,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 v.docNo = worker.documentNo;
                 v.fine = worker.fineAmount;
                 v.plant = worker.plantDiv;
+                v.dataSource = "Master Data";
                 
                 // Enhanced fields
                 v.year = obj.optString("Violation Year", "");
@@ -236,6 +239,20 @@ public abstract class AppDatabase extends RoomDatabase {
                 v.contractor = contractor;
                 
                 dao.insertViolation(v);
+            }
+
+            // --- REPRIMAND DATA IMPORT ---
+            String reprimandNote = obj.optString("Catatan Teguran", 
+                                  obj.optString("Reprimand Note", 
+                                  obj.optString("reprimandNote", "")));
+            if (!reprimandNote.isEmpty() && !reprimandNote.equals("null")) {
+                Reprimand r = new Reprimand(regNo, 
+                                           obj.optString("Tanggal Teguran", obj.optString("Reprimand Date", worker.dateOfEvent)),
+                                           obj.optString("Lokasi Teguran", obj.optString("Reprimand Location", worker.eventLocation)),
+                                           reprimandNote,
+                                           obj.optString("Penegur", obj.optString("Reprimand Officer", "-")));
+                r.dataSource = "Master Data";
+                dao.insertReprimand(r);
             }
 
             // --- TRAINING DATA IMPORT ---

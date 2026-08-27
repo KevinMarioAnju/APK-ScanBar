@@ -11,7 +11,7 @@ import java.util.List;
 
 @Dao
 public interface WorkerDao {
-    @Insert
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
     void insert(Worker worker);
 
     @Update
@@ -21,16 +21,16 @@ public interface WorkerDao {
     void delete(Worker worker);
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') as violationCount, " +
+            "(SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
             "FROM workers w ORDER BY w.id DESC")
     LiveData<List<WorkerWithStats>> getAllWorkersWithStats();
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') as violationCount, " +
+            "(SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
             "FROM workers w WHERE " +
@@ -42,37 +42,37 @@ public interface WorkerDao {
     LiveData<List<WorkerWithStats>> searchWorkersWithStats(String query);
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') as violationCount, " +
+            "(SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
-            "FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') > 0 " +
+            "FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') > 0 " +
             "ORDER BY w.id DESC")
     LiveData<List<WorkerWithStats>> getWorkersWithViolationsWithStats();
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') as violationCount, " +
+            "(SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
-            "FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') = 0 " +
-            "AND (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') = 0 " +
+            "FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') = 0 " +
+            "AND (SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) = 0 " +
             "AND (SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) = 0 " +
             "ORDER BY w.id DESC")
     LiveData<List<WorkerWithStats>> getCleanWorkersWithStats();
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) NOT LIKE '%teguran%') as violationCount, " +
+            "(SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
-            "FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') > 0 " +
+            "FROM workers w WHERE (SELECT (SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo))) > 0 " +
             "ORDER BY w.id DESC")
     LiveData<List<WorkerWithStats>> getWorkersWithReprimandsWithStats();
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo)) as violationCount, " +
+            "(SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo)) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
             "FROM workers w WHERE (SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) > 0 " +
@@ -80,8 +80,8 @@ public interface WorkerDao {
     LiveData<List<WorkerWithStats>> getWorkersWithTrainingsWithStats();
 
     @Query("SELECT w.*, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type NOT LIKE '%Teguran%') as violationCount, " +
-            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo) AND v.type LIKE '%Teguran%') as reprimandCount, " +
+            "(SELECT COUNT(*) FROM violations v WHERE LOWER(v.workerRegNo) = LOWER(w.regNo)) as violationCount, " +
+            "(SELECT COUNT(*) FROM reprimands r WHERE LOWER(r.workerRegNo) = LOWER(w.regNo)) as reprimandCount, " +
             "(SELECT COUNT(*) FROM trainings t WHERE LOWER(t.workerRegNo) = LOWER(w.regNo)) as trainingCount, " +
             "(SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) as accidentCount " +
             "FROM workers w WHERE (SELECT COUNT(*) FROM accidents a WHERE LOWER(a.workerRegNo) = LOWER(w.regNo)) > 0 " +
@@ -99,14 +99,64 @@ public interface WorkerDao {
             "ORDER BY id DESC")
     LiveData<List<Worker>> searchWorkers(String query);
 
-    @Query("SELECT * FROM workers WHERE status != 'Bersih' AND status != 'BERSIH' ORDER BY id DESC")
+    @Query("SELECT DISTINCT w.* FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE v.workerRegNo = w.regNo AND LOWER(v.type) NOT LIKE '%teguran%') > 0 ORDER BY w.id DESC")
     LiveData<List<Worker>> getWorkersWithViolations();
 
-    @Query("SELECT * FROM workers WHERE status = 'Bersih' OR status = 'BERSIH' ORDER BY id DESC")
+    @Query("SELECT DISTINCT w.* FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE v.workerRegNo = w.regNo AND LOWER(v.type) NOT LIKE '%teguran%') = 0 " +
+            "AND (SELECT (SELECT COUNT(*) FROM violations v WHERE v.workerRegNo = w.regNo AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE r.workerRegNo = w.regNo)) = 0 " +
+            "AND (SELECT COUNT(*) FROM accidents a WHERE a.workerRegNo = w.regNo) = 0 ORDER BY w.id DESC")
     LiveData<List<Worker>> getCleanWorkers();
 
-    @Query("SELECT DISTINCT w.* FROM workers w INNER JOIN violations v ON w.regNo = v.workerRegNo WHERE v.type LIKE '%Teguran%'")
+    @Query("SELECT DISTINCT w.* FROM workers w WHERE (SELECT (SELECT COUNT(*) FROM violations v WHERE v.workerRegNo = w.regNo AND LOWER(v.type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands r WHERE r.workerRegNo = w.regNo)) > 0 ORDER BY w.id DESC")
     LiveData<List<Worker>> getWorkersWithReprimands();
+
+    @Query("SELECT DISTINCT w.* FROM workers w INNER JOIN trainings t ON w.regNo = t.workerRegNo")
+    LiveData<List<Worker>> getWorkersWithTrainingsOnly();
+
+    @Query("SELECT DISTINCT w.* FROM workers w INNER JOIN accidents a ON w.regNo = a.workerRegNo")
+    LiveData<List<Worker>> getWorkersWithAccidentsOnly();
+
+    @Query("SELECT * FROM workers WHERE dataSource = :source ORDER BY id DESC")
+    LiveData<List<Worker>> getWorkersBySource(String source);
+
+    @Query("SELECT w.* FROM workers w WHERE (SELECT COUNT(*) FROM violations v WHERE v.workerRegNo = w.regNo) = 0 AND (SELECT COUNT(*) FROM reprimands r WHERE r.workerRegNo = w.regNo) = 0 AND (SELECT COUNT(*) FROM accidents a WHERE a.workerRegNo = w.regNo) = 0 ORDER BY w.id DESC")
+    List<Worker> getCleanWorkersSync();
+
+    @Query("SELECT * FROM violations ORDER BY date DESC")
+    LiveData<List<Violation>> getAllViolations();
+
+    @Query("SELECT * FROM violations ORDER BY date DESC")
+    List<Violation> getAllViolationsSync();
+
+    @Query("SELECT * FROM reprimands ORDER BY date DESC")
+    List<Reprimand> getAllReprimandsSync();
+
+    @Query("SELECT * FROM trainings ORDER BY date DESC")
+    LiveData<List<Training>> getAllTrainings();
+
+    @Query("SELECT * FROM trainings ORDER BY date DESC")
+    List<Training> getAllTrainingsSync();
+
+    @Query("SELECT * FROM accidents ORDER BY date DESC")
+    LiveData<List<Accident>> getAllAccidents();
+
+    @Query("SELECT * FROM accidents ORDER BY date DESC")
+    List<Accident> getAllAccidentsSync();
+
+    @Query("SELECT * FROM workers ORDER BY id DESC")
+    List<Worker> getAllWorkersSync();
+
+    @Query("SELECT * FROM workers WHERE dataSource = :source ORDER BY id DESC")
+    List<Worker> getWorkersBySourceSync(String source);
+
+    @Query("SELECT w.* FROM workers w INNER JOIN violations v ON w.regNo = v.workerRegNo")
+    List<Worker> getWorkersWithViolationsOnlySync();
+
+    @Query("SELECT w.* FROM workers w INNER JOIN accidents a ON w.regNo = a.workerRegNo")
+    List<Worker> getWorkersWithAccidentsOnlySync();
+
+    @Query("SELECT w.* FROM workers w INNER JOIN trainings t ON w.regNo = t.workerRegNo")
+    List<Worker> getWorkersWithTrainingsOnlySync();
 
     @Query("SELECT * FROM workers WHERE regNo = :regNo LIMIT 1")
     Worker getWorkerByRegNo(String regNo);
@@ -126,7 +176,7 @@ public interface WorkerDao {
     @Query("SELECT * FROM violations WHERE workerRegNo = :regNo ORDER BY date DESC")
     List<Violation> getViolationsSync(String regNo);
 
-    @Insert
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
     void insertViolation(Violation violation);
 
     @Update
@@ -138,11 +188,32 @@ public interface WorkerDao {
     @Query("DELETE FROM violations WHERE workerRegNo = :regNo")
     void deleteViolationsByWorker(String regNo);
 
+    @Query("SELECT * FROM reprimands WHERE workerRegNo = :regNo ORDER BY date DESC")
+    LiveData<List<Reprimand>> getReprimandsByWorker(String regNo);
+
+    @Query("SELECT * FROM reprimands WHERE workerRegNo = :regNo ORDER BY date DESC")
+    List<Reprimand> getReprimandsSync(String regNo);
+
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
+    void insertReprimand(Reprimand reprimand);
+
+    @Update
+    void updateReprimand(Reprimand reprimand);
+
+    @Delete
+    void deleteReprimand(Reprimand reprimand);
+
+    @Query("DELETE FROM reprimands WHERE workerRegNo = :regNo")
+    void deleteReprimandsByWorker(String regNo);
+
     @Query("SELECT COUNT(*) FROM violations WHERE workerRegNo = :regNo")
     int getViolationCount(String regNo);
 
-    @Query("SELECT COUNT(*) FROM violations WHERE workerRegNo = :regNo AND type NOT LIKE '%Teguran%'")
+    @Query("SELECT COUNT(*) FROM violations WHERE workerRegNo = :regNo AND LOWER(type) NOT LIKE '%teguran%'")
     int getFormalViolationCount(String regNo);
+
+    @Query("SELECT (SELECT COUNT(*) FROM violations WHERE workerRegNo = :regNo AND LOWER(type) LIKE '%teguran%') + (SELECT COUNT(*) FROM reprimands WHERE workerRegNo = :regNo)")
+    int getReprimandCount(String regNo);
 
     @Query("SELECT COUNT(*) FROM violations")
     LiveData<Integer> getTotalViolationCount();
@@ -153,7 +224,7 @@ public interface WorkerDao {
     @Query("SELECT * FROM trainings WHERE workerRegNo = :regNo ORDER BY date DESC")
     List<Training> getTrainingsSync(String regNo);
 
-    @Insert
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
     void insertTraining(Training training);
 
     @Update
@@ -168,7 +239,10 @@ public interface WorkerDao {
     @Query("SELECT * FROM accidents WHERE workerRegNo = :regNo ORDER BY date DESC, time DESC")
     LiveData<List<Accident>> getAccidentsByWorker(String regNo);
 
-    @Insert
+    @Query("SELECT COUNT(*) FROM accidents WHERE workerRegNo = :regNo")
+    int getAccidentCount(String regNo);
+
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
     void insertAccident(Accident accident);
 
     @Update
@@ -180,6 +254,21 @@ public interface WorkerDao {
     @Query("DELETE FROM accidents WHERE workerRegNo = :regNo")
     void deleteAccidentsByWorker(String regNo);
 
+    @Query("DELETE FROM workers WHERE dataSource = 'Master Data'")
+    void deleteMasterWorkers();
+
+    @Query("DELETE FROM violations WHERE dataSource = 'Master Data'")
+    void deleteMasterViolations();
+
+    @Query("DELETE FROM reprimands WHERE dataSource = 'Master Data'")
+    void deleteMasterReprimands();
+
+    @Query("DELETE FROM trainings WHERE dataSource = 'Master Data'")
+    void deleteMasterTrainings();
+
+    @Query("DELETE FROM accidents WHERE dataSource = 'Master Data'")
+    void deleteMasterAccidents();
+
     @Query("DELETE FROM accidents")
     void deleteAllAccidents();
 
@@ -188,6 +277,9 @@ public interface WorkerDao {
 
     @Query("DELETE FROM violations")
     void deleteAllViolations();
+
+    @Query("DELETE FROM reprimands")
+    void deleteAllReprimands();
 
     @Query("DELETE FROM workers")
     void deleteAllWorkers();

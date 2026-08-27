@@ -10,37 +10,61 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:paddingBottom="40dp">
+        android:paddingBottom="48dp">
 
         <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
+            android:layout_width="48dp"
+            android:layout_height="5dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="24dp"
             android:background="#E2E8F0" />
 
-        <TextView
-            android:id="@+id/tvSheetName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="NAMA KONTRAKTOR"
-            android:textColor="@color/text_high"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tvSheetRegNo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Reg No: 1203232"
-            android:textColor="@color/text_low"
-            android:textSize="14sp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/tvSheetRegNo"
+                android:layout_marginEnd="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvSheetName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NAMA PEKERJA"
+                    android:textColor="@color/text_high"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSheetPosition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="JABATAN"
+                    android:textColor="@color/text_low"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvSheetRegNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="4dp"
+                android:text="1203232"
+                android:textColor="@color/text_low"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginVertical="20dp"
+            android:layout_marginVertical="24dp"
             android:background="@color/divider_light" />
 
         <GridLayout
@@ -57,7 +81,7 @@
 
             <LinearLayout style="@style/SheetInfoItem">
                 <TextView style="@style/SheetInfoLabel" android:text="JABATAN" />
-                <TextView android:id="@+id/tvSheetPosition" style="@style/SheetInfoValue" android:text="-" />
+                <TextView android:id="@+id/tvSheetPositionGrid" style="@style/SheetInfoValue" android:text="-" />
             </LinearLayout>
 
             <LinearLayout style="@style/SheetInfoItem">
@@ -66,85 +90,94 @@
             </LinearLayout>
 
             <LinearLayout style="@style/SheetInfoItem">
-                <TextView style="@style/SheetInfoLabel" android:text="NO. DOKUMEN" />
-                <TextView android:id="@+id/tvSheetDocNo" style="@style/SheetInfoValue" android:text="-" />
+                <TextView style="@style/SheetInfoLabel" android:text="PLANT / DIVISI" />
+                <TextView android:id="@+id/tvSheetPlantDiv" style="@style/SheetInfoValue" android:text="-" />
             </LinearLayout>
 
+            <LinearLayout style="@style/SheetInfoItem">
+                <TextView style="@style/SheetInfoLabel" android:text="SUMBER DATA" />
+                <TextView android:id="@+id/tvSheetDataSource" style="@style/SheetInfoValue" android:text="-" />
+            </LinearLayout>
         </GridLayout>
 
+        <!-- Actions Row (Smooth Buttons) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvSheetViolationBadge"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_status_pill_success"
-                android:gravity="center"
-                android:padding="12dp"
-                android:text="BERSIH"
-                android:textColor="@android:color/white"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/tvSheetAccidentBadge"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:background="@drawable/bg_status_pill_error"
-                android:backgroundTint="#800000"
-                android:gravity="center"
-                android:padding="12dp"
-                android:text="TAMBAH KECELAKAAN"
-                android:textColor="@android:color/white"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tvSheetViolationBadge"
+                    style="@style/SmoothViolationButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TAMBAH PELANGGARAN"
+                    android:textSize="9sp"
+                    android:insetBottom="0dp"
+                    android:insetTop="0dp" />
 
-            <Button
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tvSheetAccidentBadge"
+                    style="@style/SmoothAccidentButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:text="TAMBAH KECELAKAAN"
+                    android:textSize="9sp"
+                    android:insetBottom="0dp"
+                    android:insetTop="0dp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddNoteSheet"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/SmoothTeguranButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="Teguran"
-                android:textColor="@color/accent_teal"
-                app:icon="@android:drawable/ic_menu_edit"
-                app:iconTint="@color/accent_teal" />
+                android:layout_marginTop="12dp"
+                android:layout_gravity="center_horizontal"
+                android:text="Berikan Teguran (Catatan)"
+                app:icon="@android:drawable/ic_menu_edit" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/llViolationSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="bottom">
+                android:gravity="center_vertical">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Riwayat Pelanggaran"
-                    android:textColor="@color/alert_terracotta"
-                    android:textSize="14sp"
+                    android:textColor="@color/violation_primary"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
                 <TextView
                     android:id="@+id/tvSheetViolationCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="(0)"
-                    android:textColor="@color/text_low"
-                    android:textSize="12sp" />
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_status_pill_violation"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="2dp"
+                    android:text="0"
+                    android:textColor="@color/violation_primary"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -159,7 +192,7 @@
             android:id="@+id/llReprimandSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -167,22 +200,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="bottom">
+                android:gravity="center_vertical">
                 <TextView
+                    android:id="@+id/tvSheetReprimandLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Riwayat Teguran (Catatan)"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
+                    android:textColor="@color/reprimand_primary"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
                 <TextView
                     android:id="@+id/tvSheetReprimandCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="(0)"
-                    android:textColor="@color/text_low"
-                    android:textSize="12sp" />
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_status_pill_reprimand"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="2dp"
+                    android:text="0"
+                    android:textColor="@color/reprimand_primary"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -197,7 +235,7 @@
             android:id="@+id/llTrainingSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -205,16 +243,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="bottom">
-
+                android:gravity="center_vertical">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Riwayat Pelatihan (Training)"
                     android:textColor="@color/text_high"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tvSheetTrainingCount"
                     android:layout_width="wrap_content"
@@ -237,7 +273,7 @@
             android:id="@+id/llAccidentSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -245,24 +281,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="bottom">
-
+                android:gravity="center_vertical">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Riwayat Kecelakaan"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
+                    android:textColor="@color/accident_primary"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tvSheetAccidentCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="(0)"
-                    android:textColor="@color/text_low"
-                    android:textSize="12sp" />
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_status_pill_accident"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="2dp"
+                    android:text="0"
+                    android:textColor="@color/accident_primary"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -277,28 +315,31 @@
             android:id="@+id/layoutFine"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_fine_highlight"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_fine_gradient"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp"
+            android:elevation="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TOTAL DENDA"
-                android:textColor="@color/alert_terracotta"
+                android:text="TOTAL DENDA TERAKUMULASI"
+                android:textColor="@color/violation_primary"
                 android:textSize="10sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
 
             <TextView
                 android:id="@+id/tvSheetFine"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="6dp"
                 android:text="Rp -"
-                android:textColor="@color/alert_terracotta"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textColor="@color/violation_primary"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:letterSpacing="-0.02" />
         </LinearLayout>
 
     </LinearLayout>

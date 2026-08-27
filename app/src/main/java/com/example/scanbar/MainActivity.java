@@ -62,28 +62,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateNavUI(boolean isScanActive) {
+        int accentColor = androidx.core.content.ContextCompat.getColor(this, R.color.accent_teal);
+        int whiteColor = android.graphics.Color.WHITE;
+        int textHigh = androidx.core.content.ContextCompat.getColor(this, R.color.text_high);
+
         if (isScanActive) {
-            binding.btnNavScan.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.accent_teal)));
-            binding.btnNavScan.setTextColor(getColor(R.color.white));
-            binding.btnNavScan.setIconTint(android.content.res.ColorStateList.valueOf(getColor(R.color.white)));
-
+            // Scan Active
+            binding.btnNavScan.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accentColor));
+            binding.btnNavScan.setTextColor(whiteColor);
+            binding.btnNavScan.setIconTint(android.content.res.ColorStateList.valueOf(whiteColor));
+            binding.btnNavScan.animate().scaleX(1.05f).scaleY(1.05f).setDuration(200).start();
+            
+            // Directory Inactive
             binding.btnNavDirectory.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT));
-            binding.btnNavDirectory.setTextColor(getColor(R.color.text_medium));
-            binding.btnNavDirectory.setIconTint(android.content.res.ColorStateList.valueOf(getColor(R.color.text_medium)));
-
-            // Shift indicator line to the left (under Scan)
-            binding.navIndicator.animate().translationX(-60).setDuration(200).start();
+            binding.btnNavDirectory.setTextColor(textHigh);
+            binding.btnNavDirectory.setIconTint(android.content.res.ColorStateList.valueOf(textHigh));
+            binding.btnNavDirectory.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
         } else {
-            binding.btnNavDirectory.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.accent_teal)));
-            binding.btnNavDirectory.setTextColor(getColor(R.color.white));
-            binding.btnNavDirectory.setIconTint(android.content.res.ColorStateList.valueOf(getColor(R.color.white)));
-
+            // Directory Active
+            binding.btnNavDirectory.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accentColor));
+            binding.btnNavDirectory.setTextColor(whiteColor);
+            binding.btnNavDirectory.setIconTint(android.content.res.ColorStateList.valueOf(whiteColor));
+            binding.btnNavDirectory.animate().scaleX(1.05f).scaleY(1.05f).setDuration(200).start();
+            
+            // Scan Inactive
             binding.btnNavScan.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT));
-            binding.btnNavScan.setTextColor(getColor(R.color.text_medium));
-            binding.btnNavScan.setIconTint(android.content.res.ColorStateList.valueOf(getColor(R.color.text_medium)));
-
-            // Shift indicator line to the right (under Directory)
-            binding.navIndicator.animate().translationX(60).setDuration(200).start();
+            binding.btnNavScan.setTextColor(textHigh);
+            binding.btnNavScan.setIconTint(android.content.res.ColorStateList.valueOf(textHigh));
+            binding.btnNavScan.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
         }
     }
 

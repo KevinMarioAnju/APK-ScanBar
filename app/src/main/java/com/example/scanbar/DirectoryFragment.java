@@ -55,6 +55,17 @@ import com.example.scanbar.data.Accident;
 import com.example.scanbar.databinding.DialogAccidentDetailsBinding;
 import com.example.scanbar.databinding.DialogAccidentFormBinding;
 import com.example.scanbar.databinding.ItemAccidentDetailBinding;
+import com.example.scanbar.databinding.DialogAdvancedExportBinding;
+import com.example.scanbar.databinding.DialogSelectExportDataBinding;
+import com.example.scanbar.databinding.ItemSelectExportBinding;
+import android.graphics.pdf.PdfDocument;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Color;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import android.widget.CheckBox;
+
+import org.apache.poi.ss.usermodel.DataFormatter;
 
 public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorkerActionListener {
     private FragmentDirectoryBinding binding;
@@ -87,19 +98,601 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         observeWorkers(workerDao.getAllWorkersWithStats());
 
         if ("admin".equalsIgnoreCase(userRole)) {
-            binding.btnAddWorker.setVisibility(View.VISIBLE);
+            binding.btnAddWorkerModern.setVisibility(View.VISIBLE);
             binding.btnExport.setVisibility(View.VISIBLE);
             binding.btnImport.setVisibility(View.VISIBLE);
         } else {
-            binding.btnAddWorker.setVisibility(View.VISIBLE); // Let inspector add reports
+            binding.btnAddWorkerModern.setVisibility(View.VISIBLE); // Let inspector add reports
             binding.btnExport.setVisibility(View.GONE);
             binding.btnImport.setVisibility(View.GONE);
         }
-
-        binding.btnAddWorker.setOnClickListener(v -> showAddMenu(v));
-        binding.btnExport.setOnClickListener(this::showExportMenu);
-        binding.btnImport.setOnClickListener(v -> openFilePicker());
     }
+
+    private <T> void observeOnce(LiveData<T> liveData, java.util.function.Consumer<T> callback) {
+        liveData.observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<T>() {
+            @Override public void onChanged(T t) {
+                if (t != null) {
+                    callback.accept(t);
+                    liveData.removeObserver(this);
+                }
+            }
+        });
+    }
+
+    private void showAdvancedExportDialog() {
+        DialogAdvancedExportBinding exportBinding = DialogAdvancedExportBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(exportBinding.getRoot()).create();
+
+        // Setup Dropdown Kategori Filter
+        String[] categories = {"Semua", "Bersih", "Pelanggaran", "Teguran", "Training", "Kecelakaan"};
+        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, categories);
+        exportBinding.actvExportCategory.setAdapter(catAdapter);
+
+        // State untuk data spesifik yang terpilih
+        final List<Worker> selectedSpecificWorkers = new ArrayList<>();
+
+        exportBinding.rgExportScope.setOnCheckedChangeListener((group, checkedId) -> {
+            boolean isFiltered = (checkedId == R.id.rbExportFiltered);
+            exportBinding.tvFilterDropdownLabel.setVisibility(isFiltered ? View.VISIBLE : View.GONE);
+            exportBinding.tilExportCategory.setVisibility(isFiltered ? View.VISIBLE : View.GONE);
+        });
+
+        exportBinding.etExportLimit.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String val = s.toString().trim();
+                exportBinding.btnSelectSpecificData.setVisibility(val.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        exportBinding.btnSelectSpecificData.setOnClickListener(v -> {
+            int scopeId = exportBinding.rgExportScope.getCheckedRadioButtonId();
+            String limitStr = exportBinding.etExportLimit.getText().toString();
+            int limit = limitStr.isEmpty() ? 0 : Integer.parseInt(limitStr);
+            
+            if (scopeId == R.id.rbExportAll) {
+                observeOnce(workerDao.getAllWorkers(), workers -> showSelectDataDialog(workers, limit, selectedSpecificWorkers));
+            } else if (scopeId == R.id.rbExportFiltered) {
+                String cat = exportBinding.actvExportCategory.getText().toString();
+                observeOnce(getFilteredWorkers(cat), workers -> showSelectDataDialog(workers, limit, selectedSpecificWorkers));
+            } else {
+                observeOnce(workerDao.getWorkersBySource("Input di HP"), workers -> showSelectDataDialog(workers, limit, selectedSpecificWorkers));
+            }
+        });
+
+        exportBinding.btnExportCancel.setOnClickListener(v -> dialog.dismiss());
+        exportBinding.btnExportExecute.setOnClickListener(v -> {
+            int scopeId = exportBinding.rgExportScope.getCheckedRadioButtonId();
+            int formatId = exportBinding.rgExportFormat.getCheckedRadioButtonId();
+            String limitStr = exportBinding.etExportLimit.getText().toString();
+            int limit = limitStr.isEmpty() ? Integer.MAX_VALUE : Integer.parseInt(limitStr);
+            String format = (formatId == R.id.rbExportXLS) ? "XLS" : (formatId == R.id.rbExportPDF ? "PDF" : "CSV");
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                List<Worker> exportWorkers;
+                String catName;
+
+                if (!selectedSpecificWorkers.isEmpty()) {
+                    exportWorkers = new ArrayList<>(selectedSpecificWorkers);
+                    catName = "CustomSelected";
+                } else if (scopeId == R.id.rbExportAll) {
+                    exportWorkers = workerDao.getAllWorkersSync();
+                    catName = "SemuaData";
+                } else if (scopeId == R.id.rbExportFiltered) {
+                    String cat = exportBinding.actvExportCategory.getText().toString();
+                    catName = cat;
+                    switch (cat) {
+                        case "Bersih": exportWorkers = workerDao.getCleanWorkersSync(); break;
+                        case "Pelanggaran": exportWorkers = workerDao.getWorkersWithViolationsOnlySync(); break;
+                        case "Kecelakaan": exportWorkers = workerDao.getWorkersWithAccidentsOnlySync(); break;
+                        case "Training": exportWorkers = workerDao.getWorkersWithTrainingsOnlySync(); break;
+                        default: exportWorkers = workerDao.getAllWorkersSync();
+                    }
+                } else {
+                    exportWorkers = workerDao.getWorkersBySourceSync("Input di HP");
+                    catName = "InputHP";
+                }
+
+                if (exportWorkers == null || exportWorkers.isEmpty()) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Tidak ada data untuk diexport", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+                // Fetch full history synchronously
+                List<Violation> allVios = workerDao.getAllViolationsSync();
+                List<Training> allTrainings = workerDao.getAllTrainingsSync();
+                List<Accident> allAccidents = workerDao.getAllAccidentsSync();
+
+                // Filter history based on selected workers (Robust matching)
+                java.util.Set<String> targetIds = new java.util.HashSet<>();
+                for (Worker w : exportWorkers) if (w.regNo != null) targetIds.add(w.regNo.trim().toLowerCase());
+
+                List<Violation> filteredVios = new ArrayList<>();
+                for (Violation vi : allVios) {
+                    if (vi.workerRegNo != null && targetIds.contains(vi.workerRegNo.trim().toLowerCase())) filteredVios.add(vi);
+                }
+
+                List<Training> filteredTrainings = new ArrayList<>();
+                for (Training tr : allTrainings) {
+                    if (tr.workerRegNo != null && targetIds.contains(tr.workerRegNo.trim().toLowerCase())) filteredTrainings.add(tr);
+                }
+
+                List<Accident> filteredAccidents = new ArrayList<>();
+                for (Accident ac : allAccidents) {
+                    if (ac.workerRegNo != null && targetIds.contains(ac.workerRegNo.trim().toLowerCase())) filteredAccidents.add(ac);
+                }
+
+                getActivity().runOnUiThread(() -> {
+                    performExportData(exportWorkers, filteredVios, filteredTrainings, filteredAccidents, format, catName, limit);
+                });
+            });
+            dialog.dismiss();
+        });
+        dialog.show();
+    }
+
+    private void fetchFullHistoryAndExport(List<Worker> workers, String format, String catName, int limit) {
+        observeOnce(workerDao.getAllViolations(), violations -> {
+            observeOnce(workerDao.getAllTrainings(), trainings -> {
+                observeOnce(workerDao.getAllAccidents(), accidents -> {
+                    // Filter history to only include records for the selected workers
+                    // Use a Set of lower-case, trimmed Reg Nos for robust matching
+                    java.util.Set<String> targetRegNos = new java.util.HashSet<>();
+                    for (Worker w : workers) {
+                        if (w.regNo != null) targetRegNos.add(w.regNo.trim().toLowerCase());
+                    }
+
+                    List<Violation> filteredVios = new ArrayList<>();
+                    if (violations != null) {
+                        for (Violation v : violations) {
+                            if (v.workerRegNo != null && targetRegNos.contains(v.workerRegNo.trim().toLowerCase())) {
+                                filteredVios.add(v);
+                            }
+                        }
+                    }
+
+                    List<Training> filteredTrainings = new ArrayList<>();
+                    if (trainings != null) {
+                        for (Training t : trainings) {
+                            if (t.workerRegNo != null && targetRegNos.contains(t.workerRegNo.trim().toLowerCase())) {
+                                filteredTrainings.add(t);
+                            }
+                        }
+                    }
+
+                    List<Accident> filteredAccidents = new ArrayList<>();
+                    if (accidents != null) {
+                        for (Accident a : accidents) {
+                            if (a.workerRegNo != null && targetRegNos.contains(a.workerRegNo.trim().toLowerCase())) {
+                                filteredAccidents.add(a);
+                            }
+                        }
+                    }
+
+                    performExportData(workers, filteredVios, filteredTrainings, filteredAccidents, format, catName, limit);
+                });
+            });
+        });
+    }
+
+    private void performExportData(List<Worker> workers, List<Violation> violations, List<Training> trainings, List<Accident> accidents, String format, String catName, int limit) {
+        currentExportSession = new ExportSession(workers, violations, trainings, accidents, format, catName, limit);
+        
+        String mimeType;
+        String ext;
+        if (format.equals("XLS")) {
+            mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            ext = ".xlsx";
+        } else if (format.equals("PDF")) {
+            mimeType = "application/pdf";
+            ext = ".pdf";
+        } else {
+            mimeType = "text/csv";
+            ext = ".csv";
+        }
+
+        String dateStr = new java.text.SimpleDateFormat("ddMMyyyy", java.util.Locale.getDefault()).format(new java.util.Date());
+        String fileName = "laporan_" + catName.replace(" ", "") + "_" + dateStr + ext;
+
+        android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
+        intent.setType(mimeType);
+        intent.putExtra(android.content.Intent.EXTRA_TITLE, fileName);
+        startActivityForResult(intent, 202);
+    }
+
+    private static class ExportSession {
+        List<Worker> workers;
+        List<Violation> violations;
+        List<Training> trainings;
+        List<Accident> accidents;
+        String format;
+        String categoryName;
+        int limit;
+
+        ExportSession(List<Worker> w, List<Violation> v, List<Training> t, List<Accident> a, String f, String cat, int lim) {
+            this.workers = w != null && w.size() > lim ? w.subList(0, lim) : w;
+            this.violations = v; // Do not limit history, export all for selected workers
+            this.trainings = t;
+            this.accidents = a;
+            this.format = f;
+            this.categoryName = cat;
+            this.limit = lim;
+        }
+    }
+
+    private ExportSession currentExportSession;
+
+    private void generateXlsFileComplex(Uri uri) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try (java.io.OutputStream os = getContext().getContentResolver().openOutputStream(uri)) {
+                Workbook workbook = new XSSFWorkbook();
+                
+                // Sheet 1: Workers
+                if (currentExportSession.workers != null && !currentExportSession.workers.isEmpty()) {
+                    Sheet sheet = workbook.createSheet("Pekerja");
+                    Row header = sheet.createRow(0);
+                    // 19 Fields for Workers (Added Catatan as snapshot)
+                    String[] heads = {"Reg. No", "Name", "Contractor", "Position", "Status", "Contractor Code", "Gender", "Birth Date", "WSP Exp Date", "Age", "Event Date", "Vio Type", "Fine", "Plant", "Location", "Doc No", "Inspector", "Sumber", "Catatan Snapshot"};
+                    for (int i = 0; i < heads.length; i++) header.createCell(i).setCellValue(heads[i]);
+                    int rowIdx = 1;
+                    for (Worker w : currentExportSession.workers) {
+                        Row row = sheet.createRow(rowIdx++);
+                        row.createCell(0).setCellValue(w.regNo);
+                        row.createCell(1).setCellValue(w.name);
+                        row.createCell(2).setCellValue(w.contractor);
+                        row.createCell(3).setCellValue(w.position);
+                        row.createCell(4).setCellValue(w.status);
+                        row.createCell(5).setCellValue(w.contractorCode);
+                        row.createCell(6).setCellValue(w.gender);
+                        row.createCell(7).setCellValue(w.birthDate);
+                        row.createCell(8).setCellValue(w.wspExpDate);
+                        row.createCell(9).setCellValue(w.age);
+                        row.createCell(10).setCellValue(w.dateOfEvent);
+                        row.createCell(11).setCellValue(w.violationType);
+                        row.createCell(12).setCellValue(w.fineAmount);
+                        row.createCell(13).setCellValue(w.plantDiv);
+                        row.createCell(14).setCellValue(w.eventLocation);
+                        row.createCell(15).setCellValue(w.documentNo);
+                        row.createCell(16).setCellValue(w.inspectorName);
+                        row.createCell(17).setCellValue(w.dataSource);
+                        row.createCell(18).setCellValue("-"); // Placeholder or actual last note if we tracked it in worker
+                    }
+                }
+                
+                // Sheet 2: Violations
+                if (currentExportSession.violations != null && !currentExportSession.violations.isEmpty()) {
+                    Sheet sheet = workbook.createSheet("Pelanggaran");
+                    Row header = sheet.createRow(0);
+                    // 19 Fields for Violations (Added Catatan)
+                    String[] heads = {"Date", "Year", "Time", "Plant/Division", "TKP", "Contractor", "User Plant/Division", "Name", "Reg. NO", "Job Title", "Amount", "Type", "Charge", "Damages", "Total All", "Doc No.", "Officer", "Sumber", "Catatan"};
+                    for (int i = 0; i < heads.length; i++) header.createCell(i).setCellValue(heads[i]);
+                    int rowIdx = 1;
+                    for (Violation v : currentExportSession.violations) {
+                        Row row = sheet.createRow(rowIdx++);
+                        row.createCell(0).setCellValue(v.date);
+                        row.createCell(1).setCellValue(v.year);
+                        row.createCell(2).setCellValue(v.time);
+                        row.createCell(3).setCellValue(v.plant);
+                        row.createCell(4).setCellValue(v.location);
+                        row.createCell(5).setCellValue(v.contractor);
+                        row.createCell(6).setCellValue(v.userPlantDivision);
+                        row.createCell(7).setCellValue(v.name);
+                        row.createCell(8).setCellValue(v.workerRegNo);
+                        row.createCell(9).setCellValue(v.jobTitle);
+                        row.createCell(10).setCellValue(v.fine);
+                        row.createCell(11).setCellValue(v.type);
+                        row.createCell(12).setCellValue(v.charge);
+                        row.createCell(13).setCellValue(v.damages);
+                        row.createCell(14).setCellValue(v.totalAll);
+                        row.createCell(15).setCellValue(v.docNo);
+                        row.createCell(16).setCellValue(v.officer);
+                        row.createCell(17).setCellValue(v.dataSource);
+                        row.createCell(18).setCellValue(v.notes);
+                    }
+                }
+                
+                // Sheet 3: Trainings
+                if (currentExportSession.trainings != null && !currentExportSession.trainings.isEmpty()) {
+                    Sheet sheet = workbook.createSheet("Training");
+                    Row header = sheet.createRow(0);
+                    String[] heads = {"Id", "Name", "Training Code", "Training Title", "Date", "Time", "Training Hours", "Training Location", "Pass/Fail"};
+                    for (int i = 0; i < heads.length; i++) header.createCell(i).setCellValue(heads[i]);
+                    int rowIdx = 1;
+                    for (Training t : currentExportSession.trainings) {
+                        Row row = sheet.createRow(rowIdx++);
+                        row.createCell(0).setCellValue(t.workerRegNo);
+                        row.createCell(1).setCellValue(t.workerName);
+                        row.createCell(2).setCellValue(t.trainingCode);
+                        row.createCell(3).setCellValue(t.trainingTitle);
+                        row.createCell(4).setCellValue(t.date);
+                        row.createCell(5).setCellValue(t.time);
+                        row.createCell(6).setCellValue(t.trainingHours);
+                        row.createCell(7).setCellValue(t.trainingLocation);
+                        row.createCell(8).setCellValue(t.passFail);
+                    }
+                }
+                
+                // Sheet 4: Accidents
+                if (currentExportSession.accidents != null && !currentExportSession.accidents.isEmpty()) {
+                    Sheet sheet = workbook.createSheet("Kecelakaan");
+                    Row header = sheet.createRow(0);
+                    String[] heads = {"Id", "Tanggal Kecelakaan", "Jam Kecelakaan", "Kronologis Kecelakaan", "Keparahan", "Lokasi Kecelakaan"};
+                    for (int i = 0; i < heads.length; i++) header.createCell(i).setCellValue(heads[i]);
+                    int rowIdx = 1;
+                    for (Accident a : currentExportSession.accidents) {
+                        Row row = sheet.createRow(rowIdx++);
+                        row.createCell(0).setCellValue(a.workerRegNo);
+                        row.createCell(1).setCellValue(a.date);
+                        row.createCell(2).setCellValue(a.time);
+                        row.createCell(3).setCellValue(a.chronology);
+                        row.createCell(4).setCellValue(a.severity);
+                        row.createCell(5).setCellValue(a.location);
+                    }
+                }
+                
+                workbook.write(os);
+                workbook.close();
+                os.flush();
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Export Excel Berhasil", Toast.LENGTH_SHORT).show();
+                    currentExportSession = null;
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Export Excel Gagal", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void generateCsvFileComplex(Uri uri) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try (java.io.OutputStream os = getContext().getContentResolver().openOutputStream(uri);
+                 java.io.OutputStreamWriter osw = new java.io.OutputStreamWriter(os)) {
+
+                StringBuilder csv = new StringBuilder();
+                if (currentExportSession.workers != null) {
+                    csv.append("Reg No,Nama,Status,Kontraktor,Jabatan,Tgl Kejadian,Jenis,Denda,Plant,Lokasi,Doc No,Penegur,Sumber\n");
+                    for (Worker w : currentExportSession.workers) {
+                        csv.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                                w.regNo, w.name, w.status, w.contractor, w.position,
+                                w.dateOfEvent, w.violationType, w.fineAmount, w.plantDiv,
+                                w.eventLocation, w.documentNo, w.inspectorName, w.dataSource));
+                    }
+                } else if (currentExportSession.violations != null) {
+                    csv.append("Date,Year,Time,Plant,TKP,Contractor,Name,Reg NO,Amount,Type,Doc No,Officer\n");
+                    for (Violation v : currentExportSession.violations) {
+                        csv.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                                v.date, v.year, v.time, v.plant, v.location, v.contractor,
+                                v.name, v.workerRegNo, v.fine, v.type, v.docNo, v.officer));
+                    }
+                } else if (currentExportSession.trainings != null) {
+                    csv.append("Reg No,Name,Title,Date,Time,Hours,Location,Result\n");
+                    for (Training t : currentExportSession.trainings) {
+                        csv.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s\n",
+                                t.workerRegNo, t.workerName, t.trainingTitle, t.date, t.time,
+                                t.trainingHours, t.trainingLocation, t.passFail));
+                    }
+                } else if (currentExportSession.accidents != null) {
+                    csv.append("Reg No,Date,Time,Chronology,Severity,Location\n");
+                    for (Accident a : currentExportSession.accidents) {
+                        csv.append(String.format("%s,%s,%s,%s,%s,%s\n",
+                                a.workerRegNo, a.date, a.time, a.chronology, a.severity, a.location));
+                    }
+                }
+
+                osw.write(csv.toString());
+                osw.flush();
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Export CSV Berhasil", Toast.LENGTH_SHORT).show();
+                    currentExportSession = null;
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Export CSV Gagal", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void generatePdfFileComplex(Uri uri) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            PdfDocument document = new PdfDocument();
+            try {
+                // Determine category for title and styling
+                String catTitle = currentExportSession.categoryName;
+                
+                // PDF Settings
+                int pageWidth = 842; // A4 Landscape
+                int pageHeight = 595;
+                int margin = 40;
+                
+                PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
+                PdfDocument.Page page = document.startPage(pageInfo);
+                Canvas canvas = page.getCanvas();
+                Paint paint = new Paint();
+                Paint titlePaint = new Paint();
+                
+                titlePaint.setTextSize(20);
+                titlePaint.setFakeBoldText(true);
+                titlePaint.setColor(Color.BLACK);
+                canvas.drawText("Laporan Data " + catTitle, margin, margin + 20, titlePaint);
+                
+                paint.setTextSize(10);
+                paint.setColor(Color.BLACK);
+                
+                // Table Configuration
+                String[] headers;
+                List<String[]> dataRows = new ArrayList<>();
+                
+                if (currentExportSession.workers != null) {
+                    headers = new String[]{"Reg No", "Nama", "Contractor", "Position", "Status", "Plant", "Location"};
+                    for (Worker w : currentExportSession.workers) {
+                        dataRows.add(new String[]{w.regNo, w.name, w.contractor, w.position, w.status, w.plantDiv, w.eventLocation});
+                    }
+                } else if (currentExportSession.violations != null) {
+                    headers = new String[]{"Date", "Reg NO", "Name", "Type", "Location", "Fine", "Officer"};
+                    for (Violation v : currentExportSession.violations) {
+                        dataRows.add(new String[]{v.date, v.workerRegNo, v.name, v.type, v.location, v.fine, v.officer});
+                    }
+                } else if (currentExportSession.trainings != null) {
+                    headers = new String[]{"Reg No", "Name", "Title", "Date", "Time", "Location", "Result"};
+                    for (Training t : currentExportSession.trainings) {
+                        dataRows.add(new String[]{t.workerRegNo, t.workerName, t.trainingTitle, t.date, t.time, t.trainingLocation, t.passFail});
+                    }
+                } else if (currentExportSession.accidents != null) {
+                    headers = new String[]{"Reg No", "Date", "Time", "Severity", "Location", "Chronology"};
+                    for (Accident a : currentExportSession.accidents) {
+                        dataRows.add(new String[]{a.workerRegNo, a.date, a.time, a.severity, a.location, a.chronology});
+                    }
+                } else {
+                    headers = new String[]{"Data Kosong"};
+                }
+                
+                // Draw Table
+                float totalWidth = pageWidth - (2 * margin);
+                float[] colWidths = new float[headers.length];
+                for (int i = 0; i < headers.length; i++) colWidths[i] = totalWidth / headers.length;
+                
+                int y = margin + 60;
+                paint.setFakeBoldText(true);
+                float curX = margin;
+                for (int i = 0; i < headers.length; i++) {
+                    canvas.drawText(headers[i], curX, y, paint);
+                    curX += colWidths[i];
+                }
+                
+                canvas.drawLine(margin, y + 5, pageWidth - margin, y + 5, paint);
+                y += 25;
+                paint.setFakeBoldText(false);
+                
+                for (String[] row : dataRows) {
+                    if (y > pageHeight - margin) {
+                        document.finishPage(page);
+                        pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, document.getPages().size() + 1).create();
+                        page = document.startPage(pageInfo);
+                        canvas = page.getCanvas();
+                        y = margin + 20;
+                    }
+                    
+                    curX = margin;
+                    for (int i = 0; i < row.length; i++) {
+                        String text = (row[i] != null) ? row[i] : "-";
+                        float maxWidth = colWidths[i] - 10;
+                        if (paint.measureText(text) > maxWidth) {
+                            text = text.substring(0, Math.min(text.length(), 15)) + "...";
+                        }
+                        canvas.drawText(text, curX, y, paint);
+                        curX += colWidths[i];
+                    }
+                    y += 20;
+                }
+                
+                document.finishPage(page);
+                
+                try (java.io.OutputStream os = getContext().getContentResolver().openOutputStream(uri)) {
+                    if (os != null) {
+                        document.writeTo(os);
+                        os.flush();
+                    }
+                }
+                
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Export PDF Berhasil", Toast.LENGTH_SHORT).show();
+                    currentExportSession = null;
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Export PDF Gagal", Toast.LENGTH_SHORT).show());
+            } finally {
+                document.close();
+            }
+        });
+    }
+
+    private LiveData<List<Worker>> getFilteredWorkers(String category) {
+        switch (category) {
+            case "Bersih": return workerDao.getCleanWorkers();
+            case "Pelanggaran": return workerDao.getWorkersWithViolations();
+            case "Teguran": return workerDao.getWorkersWithReprimands();
+            case "Training": return workerDao.getWorkersWithTrainingsOnly();
+            case "Kecelakaan": return workerDao.getWorkersWithAccidentsOnly();
+            default: return workerDao.getAllWorkers();
+        }
+    }
+
+    private void showSelectDataDialog(List<Worker> allPossible, int limit, List<Worker> outSelected) {
+        DialogSelectExportDataBinding selectBinding = DialogSelectExportDataBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(selectBinding.getRoot()).create();
+
+        final List<Worker> currentSelection = new ArrayList<>();
+        final List<Worker> displayedWorkers = new ArrayList<>(allPossible);
+
+        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                return new RecyclerView.ViewHolder(ItemSelectExportBinding.inflate(getLayoutInflater(), parent, false).getRoot()) {};
+            }
+            @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                ItemSelectExportBinding b = ItemSelectExportBinding.bind(holder.itemView);
+                Worker w = displayedWorkers.get(position);
+                b.tvSelectName.setText(w.name);
+                b.tvSelectRegNo.setText("Reg No: " + w.regNo);
+                
+                b.cbExportSelect.setOnCheckedChangeListener(null);
+                b.cbExportSelect.setChecked(currentSelection.contains(w));
+                b.cbExportSelect.setOnCheckedChangeListener((v, isChecked) -> {
+                    if (isChecked) {
+                        if (currentSelection.size() >= limit) {
+                            v.setChecked(false);
+                            Toast.makeText(getContext(), "Limit " + limit + " data tercapai", Toast.LENGTH_SHORT).show();
+                        } else {
+                            currentSelection.add(w);
+                        }
+                    } else {
+                        currentSelection.remove(w);
+                    }
+                    selectBinding.tvSelectCountInfo.setText("Terpilih: " + currentSelection.size() + " / " + limit + " data");
+                });
+            }
+            @Override public int getItemCount() { return displayedWorkers.size(); }
+        };
+
+        selectBinding.rvSelectExport.setLayoutManager(new LinearLayoutManager(getContext()));
+        selectBinding.rvSelectExport.setAdapter(adapter);
+
+        // Logic Search di dalam dialog
+        selectBinding.etSelectSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().toLowerCase().trim();
+                displayedWorkers.clear();
+                if (query.isEmpty()) {
+                    displayedWorkers.addAll(allPossible);
+                } else {
+                    for (Worker w : allPossible) {
+                        if (w.name.toLowerCase().contains(query) || w.regNo.toLowerCase().contains(query)) {
+                            displayedWorkers.add(w);
+                        }
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        selectBinding.tvSelectCountInfo.setText("Terpilih: 0 / " + limit + " data");
+        selectBinding.btnSelectCancel.setOnClickListener(v -> dialog.dismiss());
+        selectBinding.btnSelectConfirm.setOnClickListener(v -> {
+            outSelected.clear();
+            outSelected.addAll(currentSelection);
+            dialog.dismiss();
+            Toast.makeText(getContext(), outSelected.size() + " data dipilih", Toast.LENGTH_SHORT).show();
+        });
+        dialog.show();
+    }
+
+
+
 
     private void showAddMenu(View v) {
         PopupMenu popup = new PopupMenu(getContext(), v);
@@ -140,6 +733,48 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.spinnerAccidentSeverity.setAdapter(sevAdapter);
 
         dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
+
+        // --- Date Format Logic ---
+        dialogBinding.etAccidentDate.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                }
+                current = formatted;
+                dialogBinding.etAccidentDate.setText(current);
+                dialogBinding.etAccidentDate.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // --- Time Format Logic ---
+        dialogBinding.etAccidentTime.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
+                }
+                current = formatted;
+                dialogBinding.etAccidentTime.setText(current);
+                dialogBinding.etAccidentTime.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
         dialogBinding.btnAccidentSave.setOnClickListener(v -> {
             String date = dialogBinding.etAccidentDate.getText().toString();
             String time = dialogBinding.etAccidentTime.getText().toString();
@@ -153,7 +788,13 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             }
 
             Executors.newSingleThreadExecutor().execute(() -> {
+                int count = workerDao.getAccidentCount(worker.regNo);
+                if (count >= 3) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Batas maksimal 3 kecelakaan tercapai", Toast.LENGTH_LONG).show());
+                    return;
+                }
                 Accident a = new Accident(worker.regNo, date, time, chronology, severity, location);
+                a.dataSource = "Input di HP";
                 workerDao.insertAccident(a);
                 getActivity().runOnUiThread(() -> {
                     Toast.makeText(getContext(), "Data Kecelakaan berhasil disimpan", Toast.LENGTH_SHORT).show();
@@ -207,6 +848,48 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         });
 
         dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
+
+        // --- Date Format Logic ---
+        dialogBinding.etAccidentDate.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                }
+                current = formatted;
+                dialogBinding.etAccidentDate.setText(current);
+                dialogBinding.etAccidentDate.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // --- Time Format Logic ---
+        dialogBinding.etAccidentTime.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
+                }
+                current = formatted;
+                dialogBinding.etAccidentTime.setText(current);
+                dialogBinding.etAccidentTime.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
         dialogBinding.btnAccidentSave.setOnClickListener(v -> {
             if (selectedWorker[0] == null) {
                 Toast.makeText(getContext(), "Pilih kontraktor terlebih dahulu", Toast.LENGTH_SHORT).show();
@@ -225,7 +908,13 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             }
 
             Executors.newSingleThreadExecutor().execute(() -> {
+                int count = workerDao.getAccidentCount(selectedWorker[0].regNo);
+                if (count >= 3) {
+                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Batas maksimal 3 kecelakaan tercapai", Toast.LENGTH_LONG).show());
+                    return;
+                }
                 Accident a = new Accident(selectedWorker[0].regNo, date, time, chronology, severity, location);
+                a.dataSource = "Input di HP";
                 workerDao.insertAccident(a);
                 getActivity().runOnUiThread(() -> {
                     Toast.makeText(getContext(), "Data Kecelakaan berhasil disimpan", Toast.LENGTH_SHORT).show();
@@ -281,6 +970,67 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         dialogBinding.btnTrainingCancel.setOnClickListener(v -> dialog.dismiss());
 
+        // --- Date Format Logic ---
+        dialogBinding.etTrainingDate.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                }
+                current = formatted;
+                dialogBinding.etTrainingDate.setText(current);
+                dialogBinding.etTrainingDate.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // --- Time Format Logic (Jam Mulai) ---
+        dialogBinding.etTrainingTime.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
+                }
+                current = formatted;
+                dialogBinding.etTrainingTime.setText(current);
+                dialogBinding.etTrainingTime.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // --- Time Format Logic (Jam Selesai) ---
+        dialogBinding.etTrainingEndTime.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else formatted = clean.substring(0, 2) + ":" + clean.substring(2, Math.min(cl, 4));
+                }
+                current = formatted;
+                dialogBinding.etTrainingEndTime.setText(current);
+                dialogBinding.etTrainingEndTime.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
         dialogBinding.btnTrainingSave.setOnClickListener(v -> {
             if (selectedWorker[0] == null) {
                 Toast.makeText(getContext(), "Pilih kontraktor terlebih dahulu", Toast.LENGTH_SHORT).show();
@@ -305,6 +1055,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                 t.endTime = endTime;
                 t.trainingLocation = location;
                 t.passFail = result;
+                t.dataSource = "Input di HP";
                 
                 // Calculate duration if possible
                 t.trainingHours = calculateDuration(startTime, endTime);
@@ -371,6 +1122,17 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             if (uri != null) {
                 readExcelFile(uri);
             }
+        } else if (requestCode == 202 && resultCode == android.app.Activity.RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null && currentExportSession != null) {
+                if (currentExportSession.format.equals("XLS")) {
+                    generateXlsFileComplex(uri);
+                } else if (currentExportSession.format.equals("PDF")) {
+                    generatePdfFileComplex(uri);
+                } else {
+                    generateCsvFileComplex(uri);
+                }
+            }
         }
     }
 
@@ -385,6 +1147,10 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
     }
 
     private void setupModernFilters() {
+        binding.btnAddWorkerModern.setOnClickListener(v -> showAddMenu(v));
+        binding.btnExport.setOnClickListener(v -> showAdvancedExportDialog());
+        binding.btnImport.setOnClickListener(v -> openFilePicker());
+
         // Now using PopupMenu triggered by the 'Aktif' button
         binding.btnFilterStatus.setOnClickListener(v -> {
             PopupMenu filterMenu = new PopupMenu(getContext(), v);
@@ -464,47 +1230,9 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
     }
 
     private void showExportMenu(View v) {
-        PopupMenu popup = new PopupMenu(getContext(), v);
-        popup.getMenu().add("Export as PDF");
-        popup.getMenu().add("Export as XLS");
-        popup.getMenu().add("Export as CSV");
-
-        popup.setOnMenuItemClickListener(item -> {
-            String title = item.getTitle().toString();
-            if (title.contains("CSV")) {
-                exportToCSV();
-            } else {
-                Toast.makeText(getContext(), "Fitur " + title + " sedang disiapkan...", Toast.LENGTH_SHORT).show();
-            }
-            return true;
-        });
-        popup.show();
+        showAdvancedExportDialog();
     }
 
-    private void exportToCSV() {
-        workerDao.getAllWorkers().observe(getViewLifecycleOwner(), workers -> {
-            if (workers == null || workers.isEmpty()) return;
-            
-            StringBuilder csv = new StringBuilder();
-            csv.append("ID Pekerja (Reg. No),Nama Pekerja,Status Pelanggaran,Nama Kontraktor,Jabatan,Tanggal Kejadian,Jenis Pelanggaran,Denda (Rp),Plant/Divisi,Lokasi Kejadian,No. Dokumen\n");
-            for (Worker w : workers) {
-                csv.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", 
-                    w.regNo, w.name, w.status, w.contractor, w.position, 
-                    w.dateOfEvent, w.violationType, w.fineAmount, w.plantDiv, 
-                    w.eventLocation, w.documentNo));
-            }
-
-            try {
-                java.io.File file = new java.io.File(getContext().getExternalFilesDir(null), "Direktori_Pekerja.csv");
-                java.io.FileWriter writer = new java.io.FileWriter(file);
-                writer.write(csv.toString());
-                writer.close();
-                Toast.makeText(getContext(), "Berhasil: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
-            } catch (Exception e) {
-                Toast.makeText(getContext(), "Gagal ekspor", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
     private void showWorkerDialog(@Nullable Worker worker) {
         DialogWorkerFormBinding dialogBinding = DialogWorkerFormBinding.inflate(getLayoutInflater());
@@ -525,6 +1253,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             dialogBinding.etName.setText(worker.name);
             dialogBinding.etContractor.setText(worker.contractor);
             dialogBinding.etPosition.setText(worker.position);
+            dialogBinding.etWorkerPlant.setText(worker.plantDiv);
 
             // Set status spinner
             int statusPos = 0;
@@ -537,8 +1266,49 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             dialogBinding.etVioType.setText(worker.violationType);
             dialogBinding.etFine.setText(worker.fineAmount);
             dialogBinding.etPlant.setText(worker.plantDiv);
+            dialogBinding.etVioDocNo.setText(worker.documentNo);
+            dialogBinding.etVioInspector.setText(worker.inspectorName);
             dialogBinding.etLocation.setText(worker.eventLocation);
             dialogBinding.etGlobalDocNo.setText(worker.documentNo);
+
+            // Set dynamic hint based on initial type
+            if (dialogBinding.tilVioInspector != null) {
+                boolean isRep = worker.violationType != null && worker.violationType.toLowerCase().contains("teguran");
+                dialogBinding.tilVioInspector.setHint(isRep ? "Nama Penegur" : "Nama Petugas");
+            }
+            
+            // Dynamic hint as user types
+            dialogBinding.etVioType.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    boolean isRep = s.toString().toLowerCase().contains("teguran");
+                    if (dialogBinding.tilVioInspector != null) {
+                        dialogBinding.tilVioInspector.setHint(isRep ? "Nama Penegur" : "Nama Petugas");
+                    }
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
+            
+            // --- Date Format Logic for Event Date ---
+            dialogBinding.etEventDate.addTextChangedListener(new TextWatcher() {
+                private String current = "";
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (s.toString().equals(current)) return;
+                    String clean = s.toString().replaceAll("[^\\d]", "");
+                    String formatted = "";
+                    int cl = clean.length();
+                    if (cl > 0) {
+                        if (cl <= 2) formatted = clean;
+                        else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                        else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                    }
+                    current = formatted;
+                    dialogBinding.etEventDate.setText(current);
+                    dialogBinding.etEventDate.setSelection(current.length());
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
 
             // Load additional violations
             Executors.newSingleThreadExecutor().execute(() -> {
@@ -588,12 +1358,15 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             String name = dialogBinding.etName.getText().toString();
             String contractor = dialogBinding.etContractor.getText().toString();
             String position = dialogBinding.etPosition.getText().toString();
+            String workerPlant = dialogBinding.etWorkerPlant.getText().toString();
             
             // Collect main violation fields
             String eventDate = dialogBinding.etEventDate.getText().toString();
             String vioType = dialogBinding.etVioType.getText().toString();
             String fine = dialogBinding.etFine.getText().toString();
             String plant = dialogBinding.etPlant.getText().toString();
+            String mainVioDocNo = dialogBinding.etVioDocNo.getText().toString();
+            String mainVioInspector = dialogBinding.etVioInspector.getText().toString();
             String location = dialogBinding.etLocation.getText().toString();
             String docNo = dialogBinding.etGlobalDocNo.getText().toString();
 
@@ -612,7 +1385,8 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                 Violation mainVio = new Violation(regNo, vioType, eventDate, location, "");
                 mainVio.fine = fine;
                 mainVio.plant = plant;
-                mainVio.docNo = docNo;
+                mainVio.docNo = mainVioDocNo;
+                mainVio.officer = mainVioInspector;
                 additionalViolations.add(mainVio);
             }
 
@@ -635,7 +1409,8 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                     );
                     violationItem.fine = vioBinding.etVioFine.getText().toString();
                     violationItem.plant = vioBinding.etVioPlant.getText().toString();
-                    violationItem.docNo = docNo; // Use global doc no
+                    violationItem.docNo = vioBinding.etVioDocNo.getText().toString();
+                    violationItem.officer = vioBinding.etVioInspector.getText().toString();
                     additionalViolations.add(violationItem);
                 }
             }
@@ -646,26 +1421,37 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             }
 
             // Determine final status based on whether ANY violation/reprimand exists
-            String finalStatus = (additionalViolations.isEmpty()) ? "Bersih" : "Pelanggaran";
+            final String finalStatus = (formalViolationCount > 0) ? "Pelanggaran" : 
+                                   (!additionalViolations.isEmpty() ? "Teguran" : "Bersih");
 
             Executors.newSingleThreadExecutor().execute(() -> {
                 Worker targetWorker = worker;
                 if (targetWorker == null) {
                     targetWorker = new Worker(regNo, name, contractor, position, finalStatus);
+                    targetWorker.dataSource = "Input di HP";
+                    targetWorker.plantDiv = workerPlant;
                 } else {
                     targetWorker.regNo = regNo;
                     targetWorker.name = name;
                     targetWorker.contractor = contractor;
                     targetWorker.position = position;
+                    targetWorker.plantDiv = workerPlant;
                     targetWorker.status = finalStatus;
+                    targetWorker.dataSource = "Input di HP";
                 }
                 
                 targetWorker.dateOfEvent = eventDate;
                 targetWorker.violationType = vioType;
                 targetWorker.fineAmount = fine;
-                targetWorker.plantDiv = plant;
+                // If there's a specific violation plant, we can use it, but workerPlant is the primary one for the profile
+                if (plant != null && !plant.isEmpty() && !plant.equals("-")) {
+                    targetWorker.plantDiv = plant;
+                } else {
+                    targetWorker.plantDiv = workerPlant;
+                }
                 targetWorker.eventLocation = location;
-                targetWorker.documentNo = docNo;
+                targetWorker.documentNo = mainVioDocNo;
+                targetWorker.inspectorName = mainVioInspector;
 
                 if (worker == null) {
                     workerDao.insert(targetWorker);
@@ -697,8 +1483,28 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             vioBinding.etVioType.setText(violation.type);
             vioBinding.etVioFine.setText(violation.fine);
             vioBinding.etVioPlant.setText(violation.plant);
+            vioBinding.etVioDocNo.setText(violation.docNo);
+            vioBinding.etVioInspector.setText(violation.officer);
             vioBinding.etVioLocation.setText(violation.location);
+
+            // Update terminology based on existing type
+            boolean isReprimand = violation.type != null && violation.type.toLowerCase().contains("teguran");
+            if (vioBinding.tilItemVioInspector != null) {
+                vioBinding.tilItemVioInspector.setHint(isReprimand ? "Nama Penegur" : "Nama Petugas");
+            }
         }
+
+        // Dynamic update as user types
+        vioBinding.etVioType.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                boolean isRep = s.toString().toLowerCase().contains("teguran");
+                if (vioBinding.tilItemVioInspector != null) {
+                    vioBinding.tilItemVioInspector.setHint(isRep ? "Nama Penegur" : "Nama Petugas");
+                }
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
         
         vioBinding.btnRemoveViolation.setOnClickListener(v -> container.removeView(vioBinding.getRoot()));
         
@@ -803,6 +1609,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             String notes = dialogBinding.etVioNotes.getText().toString();
             String fine = dialogBinding.etVioFine.getText().toString();
             String plant = dialogBinding.etVioPlant.getText().toString();
+            String docNo = dialogBinding.etVioDocNo.getText().toString();
             String inspector = dialogBinding.etInspectorName.getText().toString();
 
             if (type.isEmpty() || date.isEmpty() || loc.isEmpty()) {
@@ -811,20 +1618,37 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             }
 
             Executors.newSingleThreadExecutor().execute(() -> {
+                boolean isTeguran = type.toLowerCase().contains("teguran");
+                if (!isTeguran) {
+                    int count = workerDao.getFormalViolationCount(selectedWorker[0].regNo);
+                    if (count >= 5) {
+                        getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Batas maksimal 5 pelanggaran tercapai", Toast.LENGTH_LONG).show());
+                        return;
+                    }
+                }
+
                 Violation violation = new Violation(selectedWorker[0].regNo.trim(), type, date, loc, notes);
                 violation.fine = fine;
-                violation.docNo = inspector;
+                violation.docNo = docNo;
+                violation.officer = inspector; 
                 violation.plant = plant;
+                violation.dataSource = "Input di HP";
                 workerDao.insertViolation(violation);
 
                 // Update worker's primary fields for immediate UI consistency
-                selectedWorker[0].status = "Pelanggaran";
+                if (selectedWorker[0].status == null || !selectedWorker[0].status.equalsIgnoreCase("Pelanggaran")) {
+                    selectedWorker[0].status = isTeguran ? "Teguran" : "Pelanggaran";
+                }
                 selectedWorker[0].violationType = type;
                 selectedWorker[0].dateOfEvent = date;
                 selectedWorker[0].fineAmount = fine;
-                selectedWorker[0].plantDiv = plant;
+                if (plant != null && !plant.isEmpty() && !plant.equals("-")) {
+                    selectedWorker[0].plantDiv = plant;
+                }
                 selectedWorker[0].eventLocation = loc;
-                selectedWorker[0].documentNo = inspector;
+                selectedWorker[0].documentNo = docNo;
+                selectedWorker[0].inspectorName = inspector;
+                selectedWorker[0].dataSource = "Input di HP";
                 workerDao.update(selectedWorker[0]);
                 getActivity().runOnUiThread(() -> {
                     Toast.makeText(getContext(), "Pelanggaran berhasil dicatat", Toast.LENGTH_SHORT).show();
@@ -842,6 +1666,9 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         dialogBinding.tvVioFormTitle.setText("Pelanggaran — " + worker.name);
+        if (dialogBinding.tilInspectorName != null) {
+            dialogBinding.tilInspectorName.setHint("Nama Petugas");
+        }
         
         // Hide worker search since worker is already known
         dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
@@ -904,6 +1731,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             String notes = dialogBinding.etVioNotes.getText().toString();
             String fine = dialogBinding.etVioFine.getText().toString();
             String plant = dialogBinding.etVioPlant.getText().toString();
+            String docNo = dialogBinding.etVioDocNo.getText().toString();
             String inspector = dialogBinding.etInspectorName.getText().toString();
 
             if (type.isEmpty() || date.isEmpty() || loc.isEmpty()) {
@@ -912,26 +1740,37 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             }
 
             Executors.newSingleThreadExecutor().execute(() -> {
-                int count = workerDao.getFormalViolationCount(worker.regNo);
-                if (count >= 5) {
-                    getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Batas maksimal 5 pelanggaran tercapai", Toast.LENGTH_LONG).show());
-                    return;
+                boolean isTeguran = type.toLowerCase().contains("teguran");
+                if (!isTeguran) {
+                    int count = workerDao.getFormalViolationCount(worker.regNo);
+                    if (count >= 5) {
+                        getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Batas maksimal 5 pelanggaran tercapai", Toast.LENGTH_LONG).show());
+                        return;
+                    }
                 }
 
                 Violation violation = new Violation(worker.regNo.trim(), type, date, loc, notes);
                 violation.fine = fine;
-                violation.docNo = inspector;
+                violation.docNo = docNo;
+                violation.officer = inspector; 
                 violation.plant = plant;
+                violation.dataSource = "Input di HP";
                 workerDao.insertViolation(violation);
 
                 // Update worker's primary fields for immediate UI consistency
-                worker.status = "Pelanggaran";
+                if (worker.status == null || !worker.status.equalsIgnoreCase("Pelanggaran")) {
+                    worker.status = isTeguran ? "Teguran" : "Pelanggaran";
+                }
                 worker.violationType = type;
                 worker.dateOfEvent = date;
                 worker.fineAmount = fine;
-                worker.plantDiv = plant;
+                if (plant != null && !plant.isEmpty() && !plant.equals("-")) {
+                    worker.plantDiv = plant;
+                }
                 worker.eventLocation = loc;
-                worker.documentNo = inspector;
+                worker.documentNo = docNo;
+                worker.inspectorName = inspector;
+                worker.dataSource = "Input di HP";
                 workerDao.update(worker);
                 getActivity().runOnUiThread(() -> {
                     Toast.makeText(getContext(), "Pelanggaran berhasil dicatat", Toast.LENGTH_SHORT).show();
@@ -949,16 +1788,22 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
         dialogBinding.tvVioFormTitle.setText("Teguran — " + worker.name);
-        
-        // Use the new container to hide specific fields cleanly
-        if (dialogBinding.layoutVioSpecificFields != null) {
-            dialogBinding.layoutVioSpecificFields.setVisibility(View.GONE);
+        if (dialogBinding.tilInspectorName != null) {
+            dialogBinding.tilInspectorName.setHint("Nama Penegur");
         }
+        
+        // Hide specific fields but keep No. Dokumen visible
+        if (dialogBinding.etVioTypeManual != null) ((View)dialogBinding.etVioTypeManual.getParent().getParent()).setVisibility(View.GONE);
+        if (dialogBinding.etVioDate != null) ((View)dialogBinding.etVioDate.getParent().getParent()).setVisibility(View.GONE);
+        if (dialogBinding.etVioFine != null) ((View)dialogBinding.etVioFine.getParent().getParent()).setVisibility(View.GONE);
+        if (dialogBinding.etVioPlant != null) ((View)dialogBinding.etVioPlant.getParent().getParent()).setVisibility(View.GONE);
         
         dialogBinding.etVioTypeManual.setText("Teguran (Catatan)");
 
         dialogBinding.btnVioCancel.setOnClickListener(v -> dialog.dismiss());
         dialogBinding.btnVioSave.setOnClickListener(v -> {
+            String docNo = (dialogBinding.etVioDocNo != null && dialogBinding.etVioDocNo.getText() != null) ?
+                          dialogBinding.etVioDocNo.getText().toString() : "-";
             String inspectorName = (dialogBinding.etInspectorName != null && dialogBinding.etInspectorName.getText() != null) ?
                                   dialogBinding.etInspectorName.getText().toString() : "";
             String notes = (dialogBinding.etVioNotes != null && dialogBinding.etVioNotes.getText() != null) ? 
@@ -978,16 +1823,22 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             Executors.newSingleThreadExecutor().execute(() -> {
                 Violation violation = new Violation(worker.regNo.trim(), "Teguran (Catatan)", today, location, notes);
                 violation.fine = "-";
-                violation.docNo = inspectorName;
+                violation.docNo = docNo.isEmpty() ? "-" : docNo;
+                violation.officer = inspectorName;
                 violation.plant = worker.plantDiv != null ? worker.plantDiv : "-";
+                violation.dataSource = "Input di HP";
                 workerDao.insertViolation(violation);
                 
                 // Ensure worker status is updated to trigger refresh
-                worker.status = "Pelanggaran"; 
+                if (worker.status == null || !worker.status.equalsIgnoreCase("Pelanggaran")) {
+                    worker.status = "Teguran";
+                }
                 worker.violationType = "Teguran (Catatan)";
                 worker.dateOfEvent = today;
                 worker.eventLocation = location;
-                worker.documentNo = inspectorName;
+                worker.documentNo = docNo.isEmpty() ? "-" : docNo;
+                worker.inspectorName = inspectorName;
+                worker.dataSource = "Input di HP";
                 workerDao.update(worker);
                 
                 getActivity().runOnUiThread(() -> {
@@ -1038,18 +1889,20 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         sheetBinding.tvSheetRegNo.setText("Reg No: " + worker.regNo);
         sheetBinding.tvSheetRegNoGrid.setText(worker.regNo);
         sheetBinding.tvSheetPosition.setText(worker.position != null ? worker.position : "-");
+        sheetBinding.tvSheetPositionGrid.setText(worker.position != null ? worker.position : "-");
         sheetBinding.tvSheetContractor.setText(worker.contractor != null ? worker.contractor : "-");
-        sheetBinding.tvSheetDocNo.setText(worker.documentNo != null ? worker.documentNo : "-");
+        sheetBinding.tvSheetPlantDiv.setText(worker.plantDiv != null ? worker.plantDiv : "-");
+        sheetBinding.tvSheetDataSource.setText(worker.dataSource != null ? worker.dataSource : "-");
 
         sheetBinding.tvSheetViolationBadge.setOnClickListener(v -> showViolationDialog(worker));
-        sheetBinding.tvSheetViolationBadge.setText("TAMBAH PELANGGARAN");
-        sheetBinding.tvSheetViolationBadge.setBackgroundResource(R.drawable.bg_status_pill); 
-        sheetBinding.tvSheetViolationBadge.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(getContext(), R.color.alert_terracotta));
-
-        sheetBinding.btnAddNoteSheet.setOnClickListener(v -> showReprimandDialogFromSheet(worker));
         sheetBinding.tvSheetAccidentBadge.setOnClickListener(v -> {
             dialog.dismiss();
             showAccidentDialogForWorker(worker);
+        });
+
+        sheetBinding.btnAddNoteSheet.setOnClickListener(v -> {
+            dialog.dismiss();
+            showReprimandDialogFromSheet(worker);
         });
 
         // Role Based Visibility for deletion in details
@@ -1091,14 +1944,14 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             // Update UI Sections
             if (violationCount > 0) {
                 sheetBinding.llViolationSection.setVisibility(View.VISIBLE);
-                sheetBinding.tvSheetViolationCount.setText("(" + violationCount + ")");
+                sheetBinding.tvSheetViolationCount.setText(String.valueOf(violationCount));
             } else {
                 sheetBinding.llViolationSection.setVisibility(View.GONE);
             }
 
             if (reprimandCount > 0) {
                 sheetBinding.llReprimandSection.setVisibility(View.VISIBLE);
-                sheetBinding.tvSheetReprimandCount.setText("(" + reprimandCount + ")");
+                sheetBinding.tvSheetReprimandCount.setText(String.valueOf(reprimandCount));
             } else {
                 sheetBinding.llReprimandSection.setVisibility(View.GONE);
             }
@@ -1131,13 +1984,13 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             sheetBinding.llAccidentList.removeAllViews();
             if (accidents != null && !accidents.isEmpty()) {
                 sheetBinding.llAccidentSection.setVisibility(View.VISIBLE);
-                sheetBinding.tvSheetAccidentCount.setText("(" + accidents.size() + ")");
+                sheetBinding.tvSheetAccidentCount.setText(String.valueOf(accidents.size()));
                 for (Accident a : accidents) {
                     addAccidentItemToUi(sheetBinding.llAccidentList, a);
                 }
             } else {
                 sheetBinding.llAccidentSection.setVisibility(View.GONE);
-                sheetBinding.tvSheetAccidentCount.setText("(0)");
+                sheetBinding.tvSheetAccidentCount.setText("0");
             }
         });
 
@@ -1151,8 +2004,8 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         TextView location = accView.findViewById(R.id.tvAccidentLocation);
 
         date.setText(a.date != null ? a.date : "-");
-        severity.setText("Keparahan: " + (a.severity != null ? a.severity : "-"));
-        location.setText("Lokasi: " + (a.location != null ? a.location : "-"));
+        severity.setText(a.severity != null ? a.severity : "-");
+        location.setText(a.location != null ? a.location : "-");
 
         accView.setOnClickListener(v -> showAccidentDetailsDialog(a));
         container.addView(accView);
@@ -1258,21 +2111,28 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
     private void addViolationItemToUi(ViewGroup container, Violation v) {
         View vioView = getLayoutInflater().inflate(R.layout.item_violation_detail, container, false);
         TextView type = vioView.findViewById(R.id.tvVioDetailType);
+        TextView date = vioView.findViewById(R.id.tvVioDetailDate);
         TextView info = vioView.findViewById(R.id.tvVioDetailInfo);
         TextView loc = vioView.findViewById(R.id.tvVioDetailLoc);
         TextView plant = vioView.findViewById(R.id.tvVioDetailPlant);
+        TextView docNo = vioView.findViewById(R.id.tvVioDetailDocNo);
+        TextView inspector = vioView.findViewById(R.id.tvVioDetailInspector);
         TextView notes = vioView.findViewById(R.id.tvVioDetailNotes);
 
         type.setText(v.type);
-        info.setText("Denda: " + cleanFineAmount(v.fine));
-        loc.setText("LOKASI: " + (v.location != null ? v.location : "-"));
-        plant.setText("PLANT: " + (v.plant != null ? v.plant : "-"));
+        if (date != null) date.setText(v.date != null ? v.date : "-");
+        info.setText(cleanFineAmount(v.fine));
+        loc.setText(v.location != null ? v.location : "-");
+        plant.setText(v.plant != null ? v.plant : "-");
+        docNo.setText(v.docNo != null ? v.docNo : "-");
+        inspector.setText(v.officer != null ? v.officer : "-");
 
-        if (v.notes != null && !v.notes.isEmpty() && !v.notes.equals("-")) {
-            notes.setVisibility(View.VISIBLE);
-            notes.setText("Catatan: " + v.notes);
+        View noteContainer = vioView.findViewById(R.id.llVioNoteContainer);
+        if (v.notes != null && !v.notes.trim().isEmpty() && !v.notes.equals("-")) {
+            if (noteContainer != null) noteContainer.setVisibility(View.VISIBLE);
+            notes.setText(v.notes);
         } else {
-            notes.setVisibility(View.GONE);
+            if (noteContainer != null) noteContainer.setVisibility(View.GONE);
         }
 
         vioView.setOnClickListener(view -> showViolationDetailDialog(v));
@@ -1288,8 +2148,16 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         date.setText(v.date != null ? v.date : "-");
         notes.setText(v.notes != null ? v.notes : "-");
-        location.setText("Lokasi: " + (v.location != null ? v.location : "-"));
-        inspector.setText("Oleh: " + (v.docNo != null ? v.docNo : "Petugas"));
+        location.setText(v.location != null ? v.location : "-");
+        
+        View noteContainer = repView.findViewById(R.id.llRepNoteContainer);
+        if (v.notes != null && !v.notes.trim().isEmpty() && !v.notes.equals("-")) {
+            if (noteContainer != null) noteContainer.setVisibility(View.VISIBLE);
+            notes.setText(v.notes);
+        } else {
+            if (noteContainer != null) noteContainer.setVisibility(View.GONE);
+        }
+        inspector.setText(v.officer != null ? v.officer : "-");
 
         repView.setOnClickListener(view -> showViolationDetailDialog(v));
         container.addView(repView);
@@ -1304,9 +2172,11 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         boolean isReprimand = "Teguran (Catatan)".equalsIgnoreCase(v.type);
         if (isReprimand) {
             detailDialogBinding.tvVioDetailTitle.setText("Detail Teguran");
+            detailDialogBinding.tvDetailOfficerLabel.setText("NAMA PENEGUR");
             detailDialogBinding.layoutDetailFine.setVisibility(View.GONE);
         } else {
             detailDialogBinding.tvVioDetailTitle.setText("Detail Pelanggaran");
+            detailDialogBinding.tvDetailOfficerLabel.setText("NAMA PETUGAS");
             detailDialogBinding.layoutDetailFine.setVisibility(View.VISIBLE);
         }
 
@@ -1315,7 +2185,8 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         detailDialogBinding.tvDetailLocation.setText(v.location);
         detailDialogBinding.tvDetailFine.setText(cleanFineAmount(v.fine));
         detailDialogBinding.tvDetailPlant.setText(v.plant);
-        detailDialogBinding.tvDetailDocNo.setText(v.docNo);
+        detailDialogBinding.tvDetailDocNo.setText(v.docNo != null ? v.docNo : "-");
+        detailDialogBinding.tvDetailOfficer.setText(v.officer != null ? v.officer : "-");
         detailDialogBinding.tvDetailNotes.setText(v.notes);
 
         // Role Based Visibility
@@ -1430,45 +2301,452 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                 if (inputStream == null) return;
                 Workbook workbook = new XSSFWorkbook(inputStream);
                 Sheet sheet = workbook.getSheetAt(0);
+                DataFormatter formatter = new DataFormatter();
                 
-                int importedCount = 0;
-                for (Row row : sheet) {
-                    if (row.getRowNum() == 0) continue; // Skip header
+                // --- NEW INTEGRATED IMPORT LOGIC ---
+                // Detect if multiple sheets exist for a full backup restore
+                Sheet workerSheet = workbook.getSheet("Pekerja");
+                Sheet violationSheet = workbook.getSheet("Pelanggaran");
+                Sheet trainingSheet = workbook.getSheet("Training");
+                Sheet accidentSheet = workbook.getSheet("Kecelakaan");
 
-                    // Map columns based on common order or headers
-                    String regNo = getCellValue(row, 0);
-                    String name = getCellValue(row, 1);
-                    String status = getCellValue(row, 2);
-                    String contractor = getCellValue(row, 3);
-                    String position = getCellValue(row, 4);
+                if (workerSheet != null) {
+                    // This is a full backup file
+                    importFullBackup(workbook, formatter);
+                } else {
+                    // This is a single-category export file or legacy file
+                    Row header = sheet.getRow(0);
+                    if (header == null) return;
                     
-                    if (regNo.isEmpty() && name.isEmpty()) continue;
-
-                    Worker worker = new Worker(regNo, name, contractor, position, status);
+                    String header1 = formatter.formatCellValue(header.getCell(1)).toLowerCase();
+                    String header2 = formatter.formatCellValue(header.getCell(2)).toLowerCase();
                     
-                    // Map additional fields if available in Excel columns 5-11
-                    worker.dateOfEvent = getCellValue(row, 5);
-                    worker.violationType = getCellValue(row, 6);
-                    worker.fineAmount = getCellValue(row, 7);
-                    worker.plantDiv = getCellValue(row, 8);
-                    worker.eventLocation = getCellValue(row, 9);
-                    worker.documentNo = getCellValue(row, 10);
-
-                    workerDao.insert(worker);
-                    importedCount++;
+                    if (header1.contains("worker name")) {
+                        importWorkers(sheet, formatter);
+                    } else if (header1.contains("year")) {
+                        importViolations(sheet, formatter);
+                    } else if (header2.contains("training code")) {
+                        importTrainings(sheet, formatter);
+                    } else if (header1.contains("tanggal kecelakaan")) {
+                        importAccidents(sheet, formatter);
+                    } else {
+                        importLegacyWorkers(sheet, formatter);
+                    }
                 }
-                
                 workbook.close();
-                int finalCount = importedCount;
-                getActivity().runOnUiThread(() -> 
-                    Toast.makeText(getContext(), "Berhasil mengimpor " + finalCount + " data", Toast.LENGTH_LONG).show());
-                
             } catch (Exception e) {
-                e.printStackTrace();
-                getActivity().runOnUiThread(() -> 
-                    Toast.makeText(getContext(), "Gagal membaca file Excel", Toast.LENGTH_SHORT).show());
+                android.util.Log.e("DirectoryFragment", "Error reading Excel file", e);
+                getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Gagal membaca file Excel: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    private void importFullBackup(Workbook workbook, DataFormatter df) {
+        List<Worker> workers = new ArrayList<>();
+        List<Violation> violations = new ArrayList<>();
+        List<Training> trainings = new ArrayList<>();
+        List<Accident> accidents = new ArrayList<>();
+
+        // Helper to find sheet case-insensitively
+        autoFindAndReadSheets(workbook, df, workers, violations, trainings, accidents);
+
+        getActivity().runOnUiThread(() -> showFullBackupPreview(workers, violations, trainings, accidents));
+    }
+
+    private void autoFindAndReadSheets(Workbook wb, DataFormatter df, List<Worker> workers, List<Violation> violations, List<Training> trainings, List<Accident> accidents) {
+        for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+            Sheet s = wb.getSheetAt(i);
+            String name = s.getSheetName().toLowerCase();
+            if (name.contains("pekerja")) {
+                for (Row row : s) {
+                    if (row.getRowNum() == 0) continue;
+                    String regNo = df.formatCellValue(row.getCell(0)).trim();
+                    if (regNo.isEmpty()) continue;
+                    Worker w = new Worker(regNo, df.formatCellValue(row.getCell(1)), df.formatCellValue(row.getCell(2)),
+                                         df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)));
+                    w.contractorCode = df.formatCellValue(row.getCell(5));
+                    w.gender = df.formatCellValue(row.getCell(6));
+                    w.birthDate = df.formatCellValue(row.getCell(7));
+                    w.wspExpDate = df.formatCellValue(row.getCell(8));
+                    w.age = df.formatCellValue(row.getCell(9));
+                    w.dateOfEvent = df.formatCellValue(row.getCell(10));
+                    w.violationType = df.formatCellValue(row.getCell(11));
+                    w.fineAmount = df.formatCellValue(row.getCell(12));
+                    w.plantDiv = df.formatCellValue(row.getCell(13));
+                    w.eventLocation = df.formatCellValue(row.getCell(14));
+                    w.documentNo = df.formatCellValue(row.getCell(15));
+                    w.inspectorName = df.formatCellValue(row.getCell(16));
+                    w.dataSource = df.formatCellValue(row.getCell(17));
+                    workers.add(w);
+                }
+            } else if (name.contains("pelanggaran")) {
+                for (Row row : s) {
+                    if (row.getRowNum() == 0) continue;
+                    String regNo = df.formatCellValue(row.getCell(8)).trim();
+                    if (regNo.isEmpty()) continue;
+                    Violation v = new Violation(regNo, df.formatCellValue(row.getCell(11)), 
+                                               df.formatCellValue(row.getCell(0)), df.formatCellValue(row.getCell(4)), 
+                                               df.formatCellValue(row.getCell(18))); // index 18 = Catatan
+                    v.year = df.formatCellValue(row.getCell(1));
+                    v.time = df.formatCellValue(row.getCell(2));
+                    v.plant = df.formatCellValue(row.getCell(3));
+                    v.contractor = df.formatCellValue(row.getCell(5));
+                    v.userPlantDivision = df.formatCellValue(row.getCell(6));
+                    v.name = df.formatCellValue(row.getCell(7));
+                    v.jobTitle = df.formatCellValue(row.getCell(9));
+                    v.fine = df.formatCellValue(row.getCell(10));
+                    v.charge = df.formatCellValue(row.getCell(12));
+                    v.damages = df.formatCellValue(row.getCell(13));
+                    v.totalAll = df.formatCellValue(row.getCell(14));
+                    v.docNo = df.formatCellValue(row.getCell(15));
+                    v.officer = df.formatCellValue(row.getCell(16));
+                    v.dataSource = df.formatCellValue(row.getCell(17));
+                    violations.add(v);
+                }
+            } else if (name.contains("training")) {
+                for (Row row : s) {
+                    if (row.getRowNum() == 0) continue;
+                    String regNo = df.formatCellValue(row.getCell(0)).trim();
+                    if (regNo.isEmpty()) continue;
+                    Training t = new Training(regNo, df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)));
+                    t.workerName = df.formatCellValue(row.getCell(1));
+                    t.trainingCode = df.formatCellValue(row.getCell(2));
+                    t.time = df.formatCellValue(row.getCell(5));
+                    t.trainingHours = df.formatCellValue(row.getCell(6));
+                    t.trainingLocation = df.formatCellValue(row.getCell(7));
+                    t.passFail = df.formatCellValue(row.getCell(8));
+                    trainings.add(t);
+                }
+            } else if (name.contains("kecelakaan")) {
+                for (Row row : s) {
+                    if (row.getRowNum() == 0) continue;
+                    String regNo = df.formatCellValue(row.getCell(0)).trim();
+                    if (regNo.isEmpty()) continue;
+                    Accident a = new Accident(regNo, df.formatCellValue(row.getCell(1)), df.formatCellValue(row.getCell(2)),
+                                             df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)), df.formatCellValue(row.getCell(5)));
+                    accidents.add(a);
+                }
+            }
+        }
+    }
+
+    private void showFullBackupPreview(List<Worker> workers, List<Violation> violations, List<Training> trainings, List<Accident> accidents) {
+        com.example.scanbar.databinding.DialogImportPreviewBinding b = 
+                com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(b.getRoot()).create();
+
+        b.tvImportCountInfo.setText(String.format("Laporan Backup Lengkap:\n• %d Pekerja\n• %d Pelanggaran\n• %d Training\n• %d Kecelakaan", 
+                workers.size(), violations.size(), trainings.size(), accidents.size()));
+
+        b.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Show worker list as preview
+        b.rvImportPreview.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                return new RecyclerView.ViewHolder(getLayoutInflater().inflate(R.layout.item_worker_minimal, parent, false)) {};
+            }
+            @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                Worker w = workers.get(position);
+                TextView name = holder.itemView.findViewById(R.id.tvMiniName);
+                TextView reg = holder.itemView.findViewById(R.id.tvMiniRegNo);
+                name.setText(w.name);
+                reg.setText(w.regNo);
+            }
+            @Override public int getItemCount() { return workers.size(); }
+        });
+
+        b.btnImportCancel.setOnClickListener(v -> dialog.dismiss());
+        b.btnImportConfirm.setOnClickListener(v -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                for (Worker w : workers) {
+                    workerDao.insert(w);
+                    // Determine status based on presence of formal violations (case-insensitive)
+                    boolean hasVio = false;
+                    for (Violation vio : violations) {
+                        if (vio.workerRegNo.trim().equalsIgnoreCase(w.regNo.trim())) {
+                            if (vio.type != null && !vio.type.toLowerCase().contains("teguran")) {
+                                hasVio = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasVio) {
+                        w.status = "Pelanggaran";
+                        workerDao.update(w);
+                    }
+                }
+                for (Violation vio : violations) workerDao.insertViolation(vio);
+                for (Training t : trainings) workerDao.insertTraining(t);
+                for (Accident a : accidents) {
+                    a.dataSource = "Imported";
+                    workerDao.insertAccident(a);
+                }
+
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Backup Berhasil Direstore", Toast.LENGTH_LONG).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        dialog.show();
+    }
+
+    private void importWorkers(Sheet sheet, DataFormatter df) {
+        List<Worker> list = new ArrayList<>();
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            String regNo = df.formatCellValue(row.getCell(0));
+            if (regNo.isEmpty()) continue;
+            Worker w = new Worker(regNo, df.formatCellValue(row.getCell(1)), df.formatCellValue(row.getCell(3)),
+                                 df.formatCellValue(row.getCell(4)), "Bersih");
+            w.contractorCode = df.formatCellValue(row.getCell(2));
+            w.wspExpDate = df.formatCellValue(row.getCell(5));
+            w.birthDate = df.formatCellValue(row.getCell(6));
+            w.age = df.formatCellValue(row.getCell(7));
+            w.gender = df.formatCellValue(row.getCell(8));
+            w.dataSource = df.formatCellValue(row.getCell(9));
+            list.add(w);
+        }
+        getActivity().runOnUiThread(() -> showImportPreviewDialog(list, "Pekerja"));
+    }
+
+    private void importViolations(Sheet sheet, DataFormatter df) {
+        List<Violation> list = new ArrayList<>();
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            String regNo = df.formatCellValue(row.getCell(8));
+            if (regNo.isEmpty()) continue;
+            Violation v = new Violation(regNo, df.formatCellValue(row.getCell(11)), 
+                                       df.formatCellValue(row.getCell(0)), df.formatCellValue(row.getCell(4)), "-");
+            v.year = df.formatCellValue(row.getCell(1));
+            v.time = df.formatCellValue(row.getCell(2));
+            v.plant = df.formatCellValue(row.getCell(3));
+            v.contractor = df.formatCellValue(row.getCell(5));
+            v.userPlantDivision = df.formatCellValue(row.getCell(6));
+            v.name = df.formatCellValue(row.getCell(7));
+            v.jobTitle = df.formatCellValue(row.getCell(9));
+            v.fine = df.formatCellValue(row.getCell(10));
+            v.charge = df.formatCellValue(row.getCell(12));
+            v.damages = df.formatCellValue(row.getCell(13));
+            v.totalAll = df.formatCellValue(row.getCell(14));
+            v.docNo = df.formatCellValue(row.getCell(15));
+            v.officer = df.formatCellValue(row.getCell(16));
+            v.dataSource = df.formatCellValue(row.getCell(17));
+            list.add(v);
+        }
+        getActivity().runOnUiThread(() -> showViolationPreviewDialog(list));
+    }
+
+    private void importTrainings(Sheet sheet, DataFormatter df) {
+        List<Training> list = new ArrayList<>();
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            String regNo = df.formatCellValue(row.getCell(0));
+            if (regNo.isEmpty()) continue;
+            Training t = new Training(regNo, df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)));
+            t.workerName = df.formatCellValue(row.getCell(1));
+            t.trainingCode = df.formatCellValue(row.getCell(2));
+            t.time = df.formatCellValue(row.getCell(5));
+            t.trainingHours = df.formatCellValue(row.getCell(6));
+            t.trainingLocation = df.formatCellValue(row.getCell(7));
+            t.passFail = df.formatCellValue(row.getCell(8));
+            list.add(t);
+        }
+        getActivity().runOnUiThread(() -> showTrainingPreviewDialog(list));
+    }
+
+    private void importAccidents(Sheet sheet, DataFormatter df) {
+        List<Accident> list = new ArrayList<>();
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            String regNo = df.formatCellValue(row.getCell(0));
+            if (regNo.isEmpty()) continue;
+            Accident a = new Accident(regNo, df.formatCellValue(row.getCell(1)), df.formatCellValue(row.getCell(2)),
+                                     df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)), df.formatCellValue(row.getCell(5)));
+            list.add(a);
+        }
+        getActivity().runOnUiThread(() -> showAccidentPreviewDialog(list));
+    }
+
+    private void importLegacyWorkers(Sheet sheet, DataFormatter df) {
+        List<Worker> list = new ArrayList<>();
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            String regNo = df.formatCellValue(row.getCell(0));
+            String name = df.formatCellValue(row.getCell(1));
+            if (regNo.isEmpty() || name.isEmpty() || regNo.equals("-")) continue;
+            Worker w = new Worker(regNo, name, df.formatCellValue(row.getCell(3)), 
+                                 df.formatCellValue(row.getCell(4)), df.formatCellValue(row.getCell(2)));
+            w.dateOfEvent = df.formatCellValue(row.getCell(5));
+            w.violationType = df.formatCellValue(row.getCell(6));
+            w.fineAmount = df.formatCellValue(row.getCell(7));
+            w.plantDiv = df.formatCellValue(row.getCell(8));
+            w.eventLocation = df.formatCellValue(row.getCell(9));
+            w.documentNo = df.formatCellValue(row.getCell(10));
+            w.inspectorName = df.formatCellValue(row.getCell(11));
+            w.dataSource = df.formatCellValue(row.getCell(12));
+            list.add(w);
+        }
+        getActivity().runOnUiThread(() -> showImportPreviewDialog(list, "Pekerja (Legacy)"));
+    }
+
+    private void showImportPreviewDialog(List<Worker> workers, String type) {
+        com.example.scanbar.databinding.DialogImportPreviewBinding previewBinding = 
+                com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(previewBinding.getRoot()).create();
+
+        previewBinding.tvImportCountInfo.setText("Ditemukan: " + workers.size() + " data " + type);
+
+        previewBinding.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
+        previewBinding.rvImportPreview.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View v = getLayoutInflater().inflate(R.layout.item_worker_minimal, parent, false);
+                return new RecyclerView.ViewHolder(v) {};
+            }
+            @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                Worker w = workers.get(position);
+                TextView tvName = holder.itemView.findViewById(R.id.tvMiniName);
+                TextView tvReg = holder.itemView.findViewById(R.id.tvMiniRegNo);
+                tvName.setText(w.name);
+                tvReg.setText(w.regNo + (w.status != null ? " (" + w.status + ")" : ""));
+            }
+            @Override public int getItemCount() { return workers.size(); }
+        });
+
+        previewBinding.btnImportCancel.setOnClickListener(v -> dialog.dismiss());
+        previewBinding.btnImportConfirm.setOnClickListener(v -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                for (Worker w : workers) {
+                    workerDao.insert(w);
+                    // Legacy sync for violations if any
+                    if (w.status != null && (w.status.equalsIgnoreCase("Pelanggaran") || (w.violationType != null && !w.violationType.equals("-")))) {
+                        Violation vio = new Violation(w.regNo, w.violationType, w.dateOfEvent, w.eventLocation, "-");
+                        vio.fine = w.fineAmount; vio.plant = w.plantDiv; vio.docNo = w.documentNo;
+                        vio.officer = w.inspectorName; vio.dataSource = w.dataSource;
+                        workerDao.insertViolation(vio);
+                    }
+                }
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Berhasil mengimpor " + workers.size() + " data pekerja", Toast.LENGTH_LONG).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        dialog.show();
+    }
+
+    private void showViolationPreviewDialog(List<Violation> list) {
+        com.example.scanbar.databinding.DialogImportPreviewBinding previewBinding = 
+                com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(previewBinding.getRoot()).create();
+        previewBinding.tvImportCountInfo.setText("Ditemukan: " + list.size() + " riwayat pelanggaran");
+
+        previewBinding.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
+        previewBinding.rvImportPreview.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View v = getLayoutInflater().inflate(R.layout.item_worker_minimal, parent, false);
+                return new RecyclerView.ViewHolder(v) {};
+            }
+            @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                Violation v = list.get(position);
+                TextView tvName = holder.itemView.findViewById(R.id.tvMiniName);
+                TextView tvReg = holder.itemView.findViewById(R.id.tvMiniRegNo);
+                tvName.setText(v.type);
+                tvReg.setText("Reg: " + v.workerRegNo + " | Tgl: " + v.date);
+            }
+            @Override public int getItemCount() { return list.size(); }
+        });
+
+        previewBinding.btnImportCancel.setOnClickListener(v -> dialog.dismiss());
+        previewBinding.btnImportConfirm.setOnClickListener(v -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                for (Violation vio : list) {
+                    workerDao.insertViolation(vio);
+                    Worker w = workerDao.getWorkerByRegNo(vio.workerRegNo);
+                    if (w != null) {
+                        boolean isTeguran = vio.type != null && vio.type.toLowerCase().contains("teguran");
+                        if (w.status == null || !w.status.equalsIgnoreCase("Pelanggaran")) {
+                            w.status = isTeguran ? "Teguran" : "Pelanggaran";
+                        }
+                        workerDao.update(w);
+                    }
+                }
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Berhasil mengimpor " + list.size() + " riwayat pelanggaran", Toast.LENGTH_LONG).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        dialog.show();
+    }
+
+    private void showTrainingPreviewDialog(List<Training> list) {
+        com.example.scanbar.databinding.DialogImportPreviewBinding previewBinding = 
+                com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(previewBinding.getRoot()).create();
+        previewBinding.tvImportCountInfo.setText("Ditemukan: " + list.size() + " riwayat training");
+
+        previewBinding.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
+        previewBinding.rvImportPreview.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View v = getLayoutInflater().inflate(R.layout.item_worker_minimal, parent, false);
+                return new RecyclerView.ViewHolder(v) {};
+            }
+            @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                Training t = list.get(position);
+                TextView tvName = holder.itemView.findViewById(R.id.tvMiniName);
+                TextView tvReg = holder.itemView.findViewById(R.id.tvMiniRegNo);
+                tvName.setText(t.trainingTitle);
+                tvReg.setText("Reg: " + t.workerRegNo + " | Tgl: " + t.date);
+            }
+            @Override public int getItemCount() { return list.size(); }
+        });
+
+        previewBinding.btnImportConfirm.setOnClickListener(v -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                for (Training t : list) workerDao.insertTraining(t);
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Import training berhasil", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        previewBinding.btnImportCancel.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void showAccidentPreviewDialog(List<Accident> list) {
+        com.example.scanbar.databinding.DialogImportPreviewBinding previewBinding = 
+                com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(previewBinding.getRoot()).create();
+        previewBinding.tvImportCountInfo.setText("Ditemukan: " + list.size() + " riwayat kecelakaan");
+
+        previewBinding.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
+        previewBinding.rvImportPreview.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View v = getLayoutInflater().inflate(R.layout.item_worker_minimal, parent, false);
+                return new RecyclerView.ViewHolder(v) {};
+            }
+            @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                Accident a = list.get(position);
+                TextView tvName = holder.itemView.findViewById(R.id.tvMiniName);
+                TextView tvReg = holder.itemView.findViewById(R.id.tvMiniRegNo);
+                tvName.setText("Kecelakaan (" + a.severity + ")");
+                tvReg.setText("Reg: " + a.workerRegNo + " | Tgl: " + a.date);
+            }
+            @Override public int getItemCount() { return list.size(); }
+        });
+
+        previewBinding.btnImportConfirm.setOnClickListener(v -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                for (Accident a : list) workerDao.insertAccident(a);
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Import kecelakaan berhasil", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        previewBinding.btnImportCancel.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     private String getCellValue(Row row, int cellIndex) {

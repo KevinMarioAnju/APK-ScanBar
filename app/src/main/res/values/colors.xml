@@ -1,41 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ScanBar: Professional & Aesthetic Palette -->
+    <!-- Core Brand Palette -->
     <color name="primary_dark">#2D3436</color>
     <color name="accent_teal">#00B894</color>
     <color name="accent_blue">#0984E3</color>
-    <color name="alert_terracotta">#E17055</color>
-    <color name="bg_main">#FFFFFF</color>
+    <color name="bg_main">#F8FAFC</color>
     <color name="bg_surface">#FFFFFF</color>
-    <color name="text_high">#2D3436</color>
-    <color name="text_medium">#636E72</color>
-    <color name="text_low">#B2BEC3</color>
-    <color name="divider_light">#F1F2F6</color>
 
-    <color name="violation_bg">#FFF5F5</color>
-    <color name="violation_stroke">#FFE3E3</color>
-    <color name="violation_header">#E17055</color>
-    <color name="reprimand_header">#F59F00</color>
-    <color name="reprimand_bg">#FFF9DB</color>
+    <!-- Text Palette -->
+    <color name="text_high">#1E293B</color>
+    <color name="text_medium">#475569</color>
+    <color name="text_low">#94A3B8</color>
+    <color name="divider_light">#E2E8F0</color>
 
-    <!-- Dark Mode Support -->
-    <color name="bg_dark_main">#121212</color>
-    <color name="bg_dark_surface">#1E1E1E</color>
+    <!-- Semantic Color Coding (Refined for UX & Readability) -->
+    <!-- Red: Violations & Accidents (Alert) -->
+    <color name="semantic_error_main">#C53030</color>
+    <color name="semantic_error_bg">#FFF5F5</color>
+    <color name="semantic_error_text">#9B2C2C</color>
 
-    <!-- Legacy compatibility (kept but updated values) -->
-    <color name="bg_dark">#F9FAFB</color>
-    <color name="bg_card">#FFFFFF</color>
-    <color name="accent_indigo">#00B894</color>
-    <color name="success_emerald">#00B894</color>
-    <color name="warning_rose">#E17055</color>
-    <color name="text_slate_main">#2D3436</color>
-    <color name="text_slate_sub">#636E72</color>
-    <color name="success_green">#00B894</color>
-    <color name="error_red">#E17055</color>
-    <color name="divider">#F1F2F6</color>
-    <color name="yellow_accent">#00B894</color>
-    <color name="text_primary">#2D3436</color>
-    <color name="text_secondary">#636E72</color>
+    <!-- Yellow/Amber: Reprimands (Warning) -->
+    <color name="semantic_warning_main">#D69E2E</color>
+    <color name="semantic_warning_bg">#FFFFF0</color>
+    <color name="semantic_warning_text">#975A16</color>
+
+    <!-- Green: Clean Status & Success -->
+    <color name="semantic_success_main">#38A169</color>
+    <color name="semantic_success_bg">#F0FFF4</color>
+    <color name="semantic_success_text">#276749</color>
+
+    <!-- Blue/Teal: Navigation & Actions (Info) -->
+    <color name="semantic_action_main">#319795</color>
+    <color name="semantic_action_bg">#E6FFFA</color>
+    <color name="semantic_action_text">#285E61</color>
+    <color name="semantic_action_netral">#3182CE</color>
+
+    <!-- Legacy Compatibility (Aliases) -->
+    <color name="violation_primary">@color/semantic_error_main</color>
+    <color name="violation_bg_soft">@color/semantic_error_bg</color>
+    <color name="reprimand_primary">@color/semantic_warning_main</color>
+    <color name="reprimand_bg_soft">@color/semantic_warning_bg</color>
+    <color name="accident_primary">@color/semantic_error_main</color>
+    <color name="accident_bg_soft">@color/semantic_error_bg</color>
+    <color name="training_primary">@color/semantic_success_main</color>
+    <color name="training_bg_soft">@color/semantic_success_bg</color>
+    <color name="training_stroke">@color/semantic_success_main</color>
+
+    <!-- Status Colors -->
+    <color name="status_clean">#00B894</color>
+    <color name="status_clean_bg">#E6FFFA</color>
+
+    <!-- Legacy & Compatibility -->
+    <color name="alert_terracotta">#E17055</color>
+    <color name="accident_dark_red">#800000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
+
+    <!-- UI Components & Missing References -->
+    <color name="bg_card">#FFFFFF</color>
+    <color name="divider">#E2E8F0</color>
+    <color name="yellow_accent">#F1C40F</color>
+    <color name="text_secondary">#475569</color>
+    <color name="success_green">#00B894</color>
+    <color name="error_red">#D63031</color>
+    <color name="violation_header">#B83227</color>
+    <color name="bg_dark">#2D3436</color>
 </resources>

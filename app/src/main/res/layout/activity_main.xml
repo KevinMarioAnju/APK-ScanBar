@@ -14,34 +14,42 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:paddingHorizontal="20dp">
+            android:layout_height="wrap_content"
+            android:minHeight="72dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="8dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/llHeaderActions"
+                android:layout_marginEnd="12dp"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvGreeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Halo, Admin "
+                    android:text="Halo, Admin Safety"
                     android:textColor="@color/text_low"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.02" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SCANNING CONTRUCTION"
+                    android:text="SCANNING CONSTRUCTION"
                     android:textColor="@color/primary_dark"
                     android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.01" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/llHeaderActions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -54,105 +62,107 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Akun"
-                    android:textColor="@color/accent_teal"
-                    app:icon="@android:drawable/ic_menu_myplaces"
-                    app:iconTint="@color/accent_teal" />
+                    android:textColor="#3182CE"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="8dp"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    app:icon="@drawable/ic_user_outline"
+                    app:iconTint="#3182CE"
+                    app:iconPadding="2dp"
+                    app:iconSize="24dp"
+                    app:iconGravity="top" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogout"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Logout"
-                    android:textColor="@color/alert_terracotta"
-                    app:icon="@android:drawable/ic_lock_power_off"
-                    app:iconTint="@color/alert_terracotta" />
+                    android:layout_marginStart="4dp"
+                    android:text="Keluar"
+                    android:textColor="#E53E3E"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="8dp"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium"
+                    app:icon="@drawable/ic_logout"
+                    app:iconTint="#E53E3E"
+                    app:iconPadding="2dp"
+                    app:iconSize="24dp"
+                    app:iconGravity="top" />
             </LinearLayout>
 
         </RelativeLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Fragment Container -->
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Bottom Navigation Bar (Floating Style Integrated) -->
+    <!-- Floating Bottom Navigation -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/bottomNavCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="32dp"
+        app:cardCornerRadius="36dp"
         app:cardBackgroundColor="@color/bg_surface"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="8dp"
-        app:strokeWidth="0dp">
+        app:cardElevation="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/divider_light">
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="64dp"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="6dp">
 
-            <LinearLayout
-                android:id="@+id/navTabs"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNavScan"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:paddingHorizontal="8dp">
+                android:layout_height="52dp"
+                android:text="Scan"
+                android:textColor="@color/text_high"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"
+                android:paddingHorizontal="24dp"
+                app:cornerRadius="26dp"
+                app:backgroundTint="@android:color/transparent"
+                app:icon="@drawable/ic_nav_scan"
+                app:iconGravity="textStart"
+                app:iconTint="@color/text_high"
+                app:iconSize="20dp"
+                app:iconPadding="8dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:elevation="0dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnNavScan"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="120dp"
-                    android:layout_height="44dp"
-                    android:text="Scan"
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    app:cornerRadius="32dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    app:icon="@drawable/ic_nav_scan"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="18dp"
-                    app:backgroundTint="@color/accent_teal"
-                    app:iconTint="@color/white" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNavDirectory"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_marginStart="4dp"
+                android:text="Directory"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"
+                android:paddingHorizontal="24dp"
+                app:cornerRadius="26dp"
+                app:backgroundTint="@color/accent_teal"
+                app:icon="@drawable/ic_nav_directory"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white"
+                app:iconSize="20dp"
+                app:iconPadding="8dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:elevation="0dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnNavDirectory"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="120dp"
-                    android:layout_height="44dp"
-                    android:text="Directory"
-                    android:textColor="@color/text_medium"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    app:cornerRadius="32dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    app:icon="@drawable/ic_nav_directory"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="18dp"
-                    app:backgroundTint="@android:color/transparent"
-                    app:iconTint="@color/text_medium" />
-            </LinearLayout>
-
-            <!-- Active Indicator Line -->
-            <View
-                android:id="@+id/navIndicator"
-                android:layout_width="40dp"
-                android:layout_height="3dp"
-                android:layout_marginBottom="4dp"
-                android:background="#2D3436"
-                android:visibility="visible" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

@@ -1,60 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_violation_card"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:layout_marginBottom="12dp">
+    android:layout_marginBottom="16dp"
+    android:layout_marginHorizontal="2dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp">
 
-    <TextView
-        android:id="@+id/tvVioDetailType"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Jenis Pelanggaran"
-        android:textColor="@color/alert_terracotta"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
+        android:orientation="vertical"
+        android:background="@drawable/bg_violation_detail_card"
+        android:padding="20dp">
 
-    <TextView
-        android:id="@+id/tvVioDetailInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Denda: Rp 1.000.000"
-        android:textColor="@color/text_medium"
-        android:textSize="13sp"
-        android:layout_marginBottom="4dp" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp">
 
-    <TextView
-        android:id="@+id/tvVioDetailPlant"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="PLANT: -"
-        android:textColor="@color/text_medium"
-        android:textSize="12sp"
-        android:layout_marginBottom="4dp" />
+            <ImageView
+                android:id="@+id/ivVioIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_alert_circle"
+                app:tint="@color/violation_primary" />
 
-    <TextView
-        android:id="@+id/tvVioDetailLoc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="LOKASI: -"
-        android:textColor="@color/text_medium"
-        android:textSize="12sp"
-        android:layout_marginBottom="4dp" />
+            <TextView
+                android:id="@+id/tvVioDetailType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/ivVioIcon"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:layout_toStartOf="@+id/tvVioDetailDate"
+                android:text="Riwayat Pelanggaran"
+                android:textColor="@color/text_high"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:letterSpacing="-0.01" />
 
-    <TextView
-        android:id="@+id/tvVioDetailNotes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Catatan: -"
-        android:textColor="@color/violation_header"
-        android:textSize="11sp"
-        android:textStyle="italic"
-        android:visibility="gone" />
+            <TextView
+                android:id="@+id/tvVioDetailDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="-"
+                android:textColor="@color/text_low"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium" />
+        </RelativeLayout>
 
-    <!-- Hidden fields for ID binding compatibility -->
-    <View android:id="@+id/tvVioDetailDate" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:useDefaultMargins="false"
+            android:alignmentMode="alignBounds">
 
-</LinearLayout>
+            <!-- Row 1 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingEnd="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DENDA"
+                    android:textColor="@color/text_low"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+                <TextView
+                    android:id="@+id/tvVioDetailInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="@color/violation_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingStart="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PLANT"
+                    android:textColor="@color/text_low"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+                <TextView
+                    android:id="@+id/tvVioDetailPlant"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="@color/text_medium"
+                    android:textSize="14sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Row 2 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingEnd="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NO. DOKUMEN"
+                    android:textColor="@color/text_low"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+                <TextView
+                    android:id="@+id/tvVioDetailDocNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="@color/text_medium"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingStart="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NAMA PETUGAS"
+                    android:textColor="@color/text_low"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+                <TextView
+                    android:id="@+id/tvVioDetailInspector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="@color/text_medium"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </GridLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOKASI KEJADIAN"
+                android:textColor="@color/text_low"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
+            <TextView
+                android:id="@+id/tvVioDetailLoc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:textColor="@color/text_medium"
+                android:textSize="13sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llVioNoteContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_note_detail"
+            android:padding="16dp"
+            android:orientation="horizontal"
+            android:gravity="top">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginTop="2dp"
+                android:src="@drawable/ic_edit_note"
+                app:tint="@color/text_low" />
+
+            <TextView
+                android:id="@+id/tvVioDetailNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="-"
+                android:textColor="@color/text_medium"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:lineSpacingExtra="4dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

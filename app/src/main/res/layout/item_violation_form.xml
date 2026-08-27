@@ -96,6 +96,37 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="No. Dokumen"
+        app:boxStrokeColor="@color/accent_teal"
+        app:hintTextColor="@color/accent_teal">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etVioDocNo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_high" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilItemVioInspector"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="Nama Penegur"
+        app:boxStrokeColor="@color/accent_teal"
+        app:hintTextColor="@color/accent_teal">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etVioInspector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_high" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:hint="Lokasi Kejadian"
         app:boxStrokeColor="@color/accent_teal"
         app:hintTextColor="@color/accent_teal">

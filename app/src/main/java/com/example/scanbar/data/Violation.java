@@ -37,6 +37,7 @@ public class Violation {
     public String totalAll;
     public String officer;
     public String paymentProofUri;
+    public String dataSource;
 
     public Violation(String workerRegNo, String type, String date, String location, String notes) {
         this.workerRegNo = workerRegNo;

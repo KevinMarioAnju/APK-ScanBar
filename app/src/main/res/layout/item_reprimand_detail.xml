@@ -1,62 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/bg_reprimand_card"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_marginBottom="16dp"
+    android:layout_marginHorizontal="2dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_reprimand_detail_card"
+        android:padding="20dp">
 
-        <TextView
-            android:id="@+id/tvRepDetailTitle"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Teguran (Catatan)"
-            android:textColor="@color/reprimand_header"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:layout_marginBottom="20dp">
 
-        <TextView
-            android:id="@+id/tvRepDetailDate"
-            android:layout_width="wrap_content"
+            <ImageView
+                android:id="@+id/ivRepIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_edit_note"
+                app:tint="@color/reprimand_primary" />
+
+            <TextView
+                android:id="@+id/tvRepDetailTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/ivRepIcon"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:layout_toStartOf="@+id/tvRepDetailDate"
+                android:text="Riwayat Teguran"
+                android:textColor="@color/text_high"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:letterSpacing="-0.01" />
+
+            <TextView
+                android:id="@+id/tvRepDetailDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="-"
+                android:textColor="@color/text_low"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium" />
+        </RelativeLayout>
+
+        <GridLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="2024-01-01"
-            android:textColor="@color/text_low"
-            android:textSize="11sp" />
-    </RelativeLayout>
+            android:columnCount="2"
+            android:useDefaultMargins="false"
+            android:alignmentMode="alignBounds">
 
-    <TextView
-        android:id="@+id/tvRepDetailNotes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Detail teguran..."
-        android:textColor="@color/text_high"
-        android:textSize="13sp"
-        android:textStyle="italic" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="0dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LOKASI"
+                    android:textColor="@color/text_low"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+                <TextView
+                    android:id="@+id/tvRepDetailLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="@color/text_medium"
+                    android:textSize="14sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvRepDetailLocation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Lokasi: -"
-        android:textColor="@color/text_medium"
-        android:textSize="11sp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NAMA PENEGUR"
+                    android:textColor="@color/text_low"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+                <TextView
+                    android:id="@+id/tvRepDetailInspector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
+                    android:textColor="@color/text_medium"
+                    android:textSize="14sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </GridLayout>
 
-    <TextView
-        android:id="@+id/tvRepDetailInspector"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Oleh: Inspector Name"
-        android:textColor="@color/text_low"
-        android:textSize="11sp" />
+        <LinearLayout
+            android:id="@+id/llRepNoteContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_note_detail"
+            android:padding="16dp"
+            android:orientation="horizontal"
+            android:gravity="top">
 
-</LinearLayout>
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginTop="2dp"
+                android:src="@drawable/ic_edit_note"
+                app:tint="@color/text_low" />
+
+            <TextView
+                android:id="@+id/tvRepDetailNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="-"
+                android:textColor="@color/text_high"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:lineSpacingExtra="4dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

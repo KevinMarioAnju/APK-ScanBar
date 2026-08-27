@@ -94,20 +94,12 @@
                     android:textColor="@color/text_high" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Hidden legacy spinner for compatibility -->
-            <Spinner
-                android:id="@+id/spinnerVioType"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone" />
-
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Tanggal"
-                app:helperText="Contoh: 11/08/2024"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
                 <com.google.android.material.textfield.TextInputEditText
@@ -124,7 +116,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Denda (Rp)"
-                app:helperText="Ketik nominal (misal: 100000)"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
                 <com.google.android.material.textfield.TextInputEditText
@@ -167,11 +158,12 @@
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilInspectorName"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Nama Penegur"
+            android:hint="Nama Petugas"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
             <com.google.android.material.textfield.TextInputEditText
@@ -218,8 +210,9 @@
             android:gravity="end"
             android:orientation="horizontal">
 
-            <!-- Hidden Close button for compatibility -->
+            <!-- Hidden elements for compatibility -->
             <View android:id="@+id/btnVioClose" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <Spinner android:id="@+id/spinnerVioType" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
             <Button
                 android:id="@+id/btnVioCancel"

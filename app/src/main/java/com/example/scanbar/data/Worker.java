@@ -22,6 +22,7 @@ public class Worker {
     public String gender;
     public String birthDate;
     public String wspExpDate;
+    public String age;
 
     // New fields from JSON "Direktori Pekerja"
     public String dateOfEvent;
@@ -30,6 +31,8 @@ public class Worker {
     public String plantDiv;
     public String eventLocation;
     public String documentNo;
+    public String inspectorName;
+    public String dataSource;
 
     public Worker(@NonNull String regNo, String name, String contractor, String position, String status) {
         this.regNo = regNo;

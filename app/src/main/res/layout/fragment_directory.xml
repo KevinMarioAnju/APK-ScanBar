@@ -15,7 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -26,45 +27,48 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Direktori Kontraktor"
-                    android:textSize="24sp"
-                    android:textColor="@color/primary_dark"
-                    android:textStyle="bold" />
+                    android:textSize="22sp"
+                    android:textColor="@color/text_high"
+                    android:fontFamily="sans-serif-medium" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:orientation="horizontal">
 
                     <ImageView
                         android:id="@+id/btnImport"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:src="@android:drawable/stat_sys_download"
-                        android:padding="4dp"
+                        android:padding="8dp"
                         app:tint="@color/text_medium"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="Import" />
 
                     <ImageView
                         android:id="@+id/btnExport"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:layout_marginStart="8dp"
                         android:src="@android:drawable/stat_sys_upload"
-                        android:padding="4dp"
+                        android:padding="8dp"
                         app:tint="@color/text_medium"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="Export" />
                 </LinearLayout>
             </RelativeLayout>
 
+            <!-- Search Bar Pill -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:background="@drawable/bg_search_modern"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="4dp">
+                android:paddingHorizontal="16dp">
 
                 <ImageView
                     android:layout_width="20dp"
@@ -75,31 +79,34 @@
                 <EditText
                     android:id="@+id/etSearch"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:hint="Cari nama atau No. Reg..."
-                    android:padding="12dp"
+                    android:paddingHorizontal="12dp"
                     android:textColor="@color/text_high"
                     android:textColorHint="@color/text_low"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text" />
             </LinearLayout>
 
-            <RelativeLayout
+            <!-- Filter Row -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:gravity="center_vertical">
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <!-- Primary Filter Button 'Aktif' with Chevron -->
+                <!-- Filter Button -->
                 <LinearLayout
                     android:id="@+id/btnFilterStatus"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
+                    android:layout_height="40dp"
                     android:background="@drawable/bg_search_modern"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="10dp"
+                    android:paddingHorizontal="12dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:clickable="true"
@@ -109,31 +116,62 @@
                         android:id="@+id/tvFilterLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Aktif"
+                        android:text="Semua"
                         android:textColor="@color/text_high"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@android:drawable/arrow_down_float"
+                        app:tint="@color/text_high" />
+                </LinearLayout>
+
+                <!-- Add Button Pill -->
+                <LinearLayout
+                    android:id="@+id/btnAddWorkerModern"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_button_teal"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="14dp"
                         android:layout_height="14dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@android:drawable/arrow_down_float"
-                        app:tint="@color/text_high" />
+                        android:src="@android:drawable/ic_input_add"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="Tambah Baru"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/tvResultCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:text="5.902 hasil"
+                    android:text="0 hasil"
                     android:textColor="@color/text_low"
-                    android:textSize="13sp" />
-            </RelativeLayout>
+                    android:textSize="12sp" />
+            </LinearLayout>
 
-            <!-- Hidden Legacy Controls for compatibility -->
             <Spinner
                 android:id="@+id/spinnerFilter"
                 android:layout_width="0dp"
@@ -155,17 +193,6 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:clipToPadding="false"
-        android:paddingBottom="80dp" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btnAddWorker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        app:srcCompat="@android:drawable/ic_input_add"
-        app:tint="@android:color/white"
-        app:backgroundTint="@color/accent_teal"
-        android:contentDescription="Tambah Kontraktor" />
+        android:paddingBottom="100dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

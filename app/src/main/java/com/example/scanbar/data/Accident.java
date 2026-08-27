@@ -19,6 +19,7 @@ public class Accident {
     public String chronology;     // Kronologis Kecelakaan
     public String severity;       // Keparahan (LTI, MTI, etc)
     public String location;       // Lokasi Kecelakaan
+    public String dataSource;     // Add this
 
     public Accident(String workerRegNo, String date, String time, String chronology, String severity, String location) {
         this.workerRegNo = workerRegNo;

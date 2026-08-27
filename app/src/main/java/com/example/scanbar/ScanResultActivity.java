@@ -34,8 +34,6 @@ import java.util.Locale;
 import java.util.concurrent.Executors;
 
 import com.example.scanbar.databinding.DialogViolationDetailsBinding;
-import android.net.Uri;
-
 import com.example.scanbar.data.Accident;
 import com.example.scanbar.databinding.DialogAccidentDetailsBinding;
 import com.example.scanbar.databinding.DialogAccidentFormBinding;
@@ -53,8 +51,8 @@ public class ScanResultActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         getWindow().setBackgroundDrawableResource(android.R.color.white);
         
-        // Load User Role
         userRole = getSharedPreferences("ScanBarSession", MODE_PRIVATE).getString("ROLE", "inspektur");
+        
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             getWindow().setStatusBarColor(Color.WHITE);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
@@ -100,11 +98,12 @@ public class ScanResultActivity extends AppCompatActivity {
     private void showWorkerDetails(Worker worker) {
         detailBinding.tvDetailName.setText(worker.name);
         detailBinding.tvDetailPosition.setText(worker.position);
+        detailBinding.tvDetailPositionGrid.setText(worker.position != null ? worker.position : "-");
         detailBinding.tvDetailRegNoTop.setText("CODE: " + worker.regNo);
         detailBinding.tvDetailRegNo.setText(worker.regNo);
         detailBinding.tvDetailContractor.setText(worker.contractor);
-        detailBinding.tvDetailEventDate.setText(worker.dateOfEvent != null ? worker.dateOfEvent : "-");
-        detailBinding.tvDetailPlant.setText(worker.plantDiv != null ? worker.plantDiv : "-");
+        detailBinding.tvDetailPlantDiv.setText(worker.plantDiv != null ? worker.plantDiv : "-");
+        detailBinding.tvDetailDataSource.setText(worker.dataSource != null ? worker.dataSource : "-");
 
         if (worker.fineAmount != null && !worker.fineAmount.equals("-") && !worker.fineAmount.isEmpty()) {
             detailBinding.layoutFine.setVisibility(View.VISIBLE);
@@ -113,16 +112,10 @@ public class ScanResultActivity extends AppCompatActivity {
             detailBinding.layoutFine.setVisibility(View.GONE);
         }
 
-        // --- NEW ACTION BUTTON LOGIC ---
+        // Action Buttons Setup
         detailBinding.tvDetailViolationBadge.setOnClickListener(v -> showViolationForm(worker));
-        detailBinding.tvDetailViolationBadge.setText("TAMBAH PELANGGARAN");
-        detailBinding.tvDetailViolationBadge.setBackgroundResource(R.drawable.bg_status_pill); 
-        detailBinding.tvDetailViolationBadge.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(this, R.color.alert_terracotta));
-
-        detailBinding.btnAddNote.setVisibility(View.VISIBLE);
-        detailBinding.btnAddNote.setOnClickListener(v -> showReprimandDialog(worker));
-
         detailBinding.tvDetailAccidentBadge.setOnClickListener(v -> showAccidentForm(worker));
+        detailBinding.btnAddNote.setOnClickListener(v -> showReprimandDialog(worker));
 
         AppDatabase.getDatabase(this).workerDao().getViolationsByWorker(worker.regNo).observe(this, violations -> {
             detailBinding.llViolationList.removeAllViews();
@@ -153,14 +146,14 @@ public class ScanResultActivity extends AppCompatActivity {
 
             if (violationCount > 0) {
                 detailBinding.llViolationSection.setVisibility(View.VISIBLE);
-                detailBinding.tvViolationCount.setText("(" + violationCount + ")");
+                detailBinding.tvViolationCount.setText(String.valueOf(violationCount));
             } else {
                 detailBinding.llViolationSection.setVisibility(View.GONE);
             }
 
             if (reprimandCount > 0) {
                 detailBinding.llReprimandSection.setVisibility(View.VISIBLE);
-                detailBinding.tvReprimandCount.setText("(" + reprimandCount + ")");
+                detailBinding.tvReprimandCount.setText(String.valueOf(reprimandCount));
             } else {
                 detailBinding.llReprimandSection.setVisibility(View.GONE);
             }
@@ -178,17 +171,13 @@ public class ScanResultActivity extends AppCompatActivity {
                 detailBinding.llTrainingList.removeAllViews();
                 if (trainings != null && !trainings.isEmpty()) {
                     detailBinding.llTrainingSection.setVisibility(View.VISIBLE);
-                    if (detailBinding.tvTrainingCount != null) {
-                        detailBinding.tvTrainingCount.setText("(" + trainings.size() + ")");
-                    }
+                    detailBinding.tvTrainingCount.setText("(" + trainings.size() + ")");
                     for (Training t : trainings) {
                         addTrainingItemToUi(t);
                     }
                 } else {
                     detailBinding.llTrainingSection.setVisibility(View.GONE);
-                    if (detailBinding.tvTrainingCount != null) {
-                        detailBinding.tvTrainingCount.setText("(0)");
-                    }
+                    detailBinding.tvTrainingCount.setText("(0)");
                 }
             }
         });
@@ -198,68 +187,158 @@ public class ScanResultActivity extends AppCompatActivity {
                 detailBinding.llAccidentList.removeAllViews();
                 if (accidents != null && !accidents.isEmpty()) {
                     detailBinding.llAccidentSection.setVisibility(View.VISIBLE);
-                    if (detailBinding.tvAccidentCount != null) {
-                        detailBinding.tvAccidentCount.setText("(" + accidents.size() + ")");
-                    }
+                    detailBinding.tvAccidentCount.setText(String.valueOf(accidents.size()));
                     for (Accident a : accidents) {
                         addAccidentItemToUi(a);
                     }
                 } else {
                     detailBinding.llAccidentSection.setVisibility(View.GONE);
-                    if (detailBinding.tvAccidentCount != null) {
-                        detailBinding.tvAccidentCount.setText("(0)");
-                    }
+                    detailBinding.tvAccidentCount.setText("0");
                 }
             }
         });
     }
 
-    private void addAccidentItemToUi(Accident a) {
-        View accView = getLayoutInflater().inflate(R.layout.item_accident_detail, detailBinding.llAccidentList, false);
-        TextView date = accView.findViewById(R.id.tvAccidentDate);
-        TextView severity = accView.findViewById(R.id.tvAccidentSeverity);
-        TextView location = accView.findViewById(R.id.tvAccidentLocation);
-
-        date.setText(a.date != null ? a.date : "-");
-        severity.setText("Keparahan: " + (a.severity != null ? a.severity : "-"));
-        location.setText("Lokasi: " + (a.location != null ? a.location : "-"));
-
-        accView.setOnClickListener(v -> showAccidentDetailsDialog(a));
-        detailBinding.llAccidentList.addView(accView);
+    private String formatFineDisplay(long amount) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.GERMANY);
+        symbols.setGroupingSeparator('.');
+        DecimalFormat formatter = new DecimalFormat("###,###", symbols);
+        return "Rp. " + formatter.format(amount) + ",00";
     }
 
-    private void showAccidentDetailsDialog(Accident a) {
-        DialogAccidentDetailsBinding detailsBinding = DialogAccidentDetailsBinding.inflate(getLayoutInflater());
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(detailsBinding.getRoot()).create();
-
-        detailsBinding.tvAccidentDetailSeverity.setText(a.severity != null ? a.severity : "-");
-        detailsBinding.tvAccidentDetailDate.setText(a.date != null ? a.date : "-");
-        detailsBinding.tvAccidentDetailTime.setText(a.time != null ? a.time : "-");
-        detailsBinding.tvAccidentDetailLocation.setText(a.location != null ? a.location : "-");
-        detailsBinding.tvAccidentDetailChronology.setText(a.chronology != null ? a.chronology : "-");
-
-        if ("admin".equalsIgnoreCase(userRole)) {
-            detailsBinding.btnAccidentDelete.setVisibility(View.VISIBLE);
+    private String cleanFineAmount(String fine) {
+        if (fine == null || fine.isEmpty() || fine.equals("-")) return "Rp -";
+        String clean = fine.replace("-", "").trim();
+        String digitsOnly = clean.replaceAll("[^0-9]", "");
+        if (digitsOnly.endsWith("00") && clean.contains(",")) {
+            digitsOnly = digitsOnly.substring(0, digitsOnly.length() - 2);
         }
+        if (digitsOnly.isEmpty()) return "Rp -";
+        try {
+            long amount = Long.parseLong(digitsOnly);
+            return formatFineDisplay(amount);
+        } catch (Exception e) {
+            return fine;
+        }
+    }
 
-        detailsBinding.btnAccidentDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Hapus Data Kecelakaan")
-                .setMessage("Apakah Anda yakin ingin menghapus data kecelakaan ini?")
-                .setPositiveButton("Hapus", (d, w) -> {
-                    Executors.newSingleThreadExecutor().execute(() -> {
-                        AppDatabase.getDatabase(this).workerDao().deleteAccident(a);
-                        runOnUiThread(() -> {
-                            Toast.makeText(this, "Data Kecelakaan berhasil dihapus", Toast.LENGTH_SHORT).show();
-                            dialog.dismiss();
-                        });
-                    });
-                })
-                .setNegativeButton("Batal", null)
-                .show();
+    private void showViolationForm(Worker worker) {
+        DialogViolationFormBinding dialogBinding = DialogViolationFormBinding.inflate(getLayoutInflater());
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+
+        dialogBinding.tvVioFormTitle.setText("Tambah Pelanggaran — " + worker.name);
+        if (dialogBinding.tilInspectorName != null) {
+            dialogBinding.tilInspectorName.setHint("Nama Petugas");
+        }
+        
+        // --- 1. Kolom Tanggal (Numeric, Auto-Format DD/MM/YYYY, Backspace Fix) ---
+        dialogBinding.etVioDate.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+            private boolean isDeleting = false;
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { isDeleting = count > after; }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().equals(current)) return;
+                String clean = s.toString().replaceAll("[^\\d]", "");
+                if (isDeleting && s.length() > 0 && (s.charAt(s.length() - 1) == '/')) {
+                    if (clean.length() > 0) clean = clean.substring(0, clean.length() - 1);
+                }
+                String formatted = "";
+                int cl = clean.length();
+                if (cl > 0) {
+                    if (cl <= 2) formatted = clean;
+                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
+                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
+                }
+                current = formatted;
+                dialogBinding.etVioDate.setText(current);
+                dialogBinding.etVioDate.setSelection(current.length());
+            }
+            @Override public void afterTextChanged(Editable s) {}
         });
 
-        detailsBinding.btnAccidentClose.setOnClickListener(v -> dialog.dismiss());
+        // --- 2. Kolom Denda (Numeric, State-Guard Anti-Loop, Rp. ###.###,00) ---
+        dialogBinding.etVioFine.addTextChangedListener(new TextWatcher() {
+            private boolean isFormatting = false;
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isFormatting) return;
+                String text = s.toString();
+                if (text.contains(",")) text = text.substring(0, text.indexOf(","));
+                String input = text.replaceAll("[^\\d]", "");
+                isFormatting = true;
+                if (input.isEmpty()) {
+                    dialogBinding.etVioFine.setText("");
+                } else {
+                    try {
+                        long parsed = Long.parseLong(input);
+                        String formatted = formatFineDisplay(parsed);
+                        dialogBinding.etVioFine.setText(formatted);
+                        dialogBinding.etVioFine.setSelection(Math.max(0, formatted.length() - 3));
+                    } catch (Exception e) { dialogBinding.etVioFine.setText(""); }
+                }
+                isFormatting = false;
+            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        dialogBinding.btnVioCancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.btnVioSave.setOnClickListener(v -> {
+            String type = dialogBinding.etVioTypeManual.getText().toString().trim();
+            String date = dialogBinding.etVioDate.getText().toString();
+            String loc = dialogBinding.etVioLocation.getText().toString();
+            String notes = dialogBinding.etVioNotes.getText().toString();
+            String fine = dialogBinding.etVioFine.getText().toString();
+            String plant = dialogBinding.etVioPlant.getText().toString();
+            String docNo = dialogBinding.etVioDocNo.getText().toString();
+            String inspector = dialogBinding.etInspectorName.getText().toString();
+
+            if (type.isEmpty() || date.isEmpty() || loc.isEmpty()) {
+                Toast.makeText(this, "Jenis, Tanggal, dan Lokasi wajib diisi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                boolean isTeguran = type.toLowerCase().contains("teguran");
+                if (!isTeguran) {
+                    int count = AppDatabase.getDatabase(this).workerDao().getFormalViolationCount(worker.regNo);
+                    if (count >= 5) {
+                        runOnUiThread(() -> Toast.makeText(this, "Batas maksimal 5 pelanggaran tercapai", Toast.LENGTH_LONG).show());
+                        return;
+                    }
+                }
+                
+                Violation violation = new Violation(worker.regNo, type, date, loc, notes);
+                violation.fine = fine;
+                violation.docNo = docNo;
+                violation.plant = plant;
+                violation.officer = inspector;
+                violation.dataSource = "Input di HP";
+                AppDatabase.getDatabase(this).workerDao().insertViolation(violation);
+                
+                // Update worker's primary fields for immediate UI consistency
+                if (worker.status == null || !worker.status.equalsIgnoreCase("Pelanggaran")) {
+                    worker.status = isTeguran ? "Teguran" : "Pelanggaran";
+                }
+                worker.violationType = type;
+                worker.dateOfEvent = date;
+                worker.fineAmount = fine;
+                if (plant != null && !plant.isEmpty() && !plant.equals("-")) {
+                    worker.plantDiv = plant;
+                }
+                worker.eventLocation = loc;
+                worker.documentNo = docNo;
+                worker.inspectorName = inspector;
+                worker.dataSource = "Input di HP";
+                AppDatabase.getDatabase(this).workerDao().update(worker);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Berhasil dicatat", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
+            });
+        });
         dialog.show();
     }
 
@@ -269,7 +348,7 @@ public class ScanResultActivity extends AppCompatActivity {
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
 
-        dialogBinding.tvAccidentFormTitle.setText("Kecelakaan — " + worker.name);
+        dialogBinding.tvAccidentFormTitle.setText("Tambah Kecelakaan — " + worker.name);
         dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
         dialogBinding.tvAccidentSelectedWorker.setText("Kontraktor: " + worker.name);
         dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
@@ -288,15 +367,20 @@ public class ScanResultActivity extends AppCompatActivity {
             String chronology = dialogBinding.etAccidentChronology.getText().toString();
 
             if (date.isEmpty() || chronology.isEmpty()) {
-                Toast.makeText(this, "Tanggal dan kronologis harus diisi", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Tanggal dan kronologis wajib diisi", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             Executors.newSingleThreadExecutor().execute(() -> {
+                int count = AppDatabase.getDatabase(this).workerDao().getAccidentCount(worker.regNo);
+                if (count >= 3) {
+                    runOnUiThread(() -> Toast.makeText(this, "Batas maksimal 3 kecelakaan tercapai", Toast.LENGTH_LONG).show());
+                    return;
+                }
                 Accident a = new Accident(worker.regNo, date, time, chronology, severity, location);
                 AppDatabase.getDatabase(this).workerDao().insertAccident(a);
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Data Kecelakaan berhasil disimpan", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Berhasil disimpan", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 });
             });
@@ -304,50 +388,31 @@ public class ScanResultActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private String formatFineDisplay(long amount) {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.GERMANY);
-        symbols.setGroupingSeparator('.');
-        DecimalFormat formatter = new DecimalFormat("###,###", symbols);
-        return "Rp. " + formatter.format(amount) + ",00";
-    }
-
-        private String cleanFineAmount(String fine) {
-        if (fine == null || fine.isEmpty() || fine.equals("-")) return "Rp -";
-        String clean = fine.replace("-", "").trim();
-        String digitsOnly = clean.replaceAll("[^0-9]", "");
-        
-        // Handle suffix ",00"
-        if (digitsOnly.endsWith("00") && clean.contains(",")) {
-            digitsOnly = digitsOnly.substring(0, digitsOnly.length() - 2);
-        }
-
-        if (digitsOnly.isEmpty()) return "Rp -";
-        try {
-            long amount = Long.parseLong(digitsOnly);
-            return formatFineDisplay(amount);
-        } catch (Exception e) {
-            return fine;
-        }
-    }
-
     private void addViolationItemToUi(Violation v) {
         View vioView = getLayoutInflater().inflate(R.layout.item_violation_detail, detailBinding.llViolationList, false);
         TextView type = vioView.findViewById(R.id.tvVioDetailType);
+        TextView date = vioView.findViewById(R.id.tvVioDetailDate);
         TextView info = vioView.findViewById(R.id.tvVioDetailInfo);
         TextView loc = vioView.findViewById(R.id.tvVioDetailLoc);
         TextView plant = vioView.findViewById(R.id.tvVioDetailPlant);
+        TextView docNo = vioView.findViewById(R.id.tvVioDetailDocNo);
+        TextView inspector = vioView.findViewById(R.id.tvVioDetailInspector);
         TextView notes = vioView.findViewById(R.id.tvVioDetailNotes);
+        View noteContainer = vioView.findViewById(R.id.llVioNoteContainer);
 
         type.setText(v.type);
-        info.setText("Denda: " + cleanFineAmount(v.fine));
-        loc.setText("LOKASI: " + (v.location != null ? v.location : "-"));
-        plant.setText("PLANT: " + (v.plant != null ? v.plant : "-"));
+        if (date != null) date.setText(v.date != null ? v.date : "-");
+        info.setText(cleanFineAmount(v.fine));
+        loc.setText(v.location != null ? v.location : "-");
+        if (plant != null) plant.setText(v.plant != null ? v.plant : "-");
+        if (docNo != null) docNo.setText(v.docNo != null ? v.docNo : "-");
+        if (inspector != null) inspector.setText(v.officer != null ? v.officer : "-");
 
-        if (v.notes != null && !v.notes.isEmpty() && !v.notes.equals("-")) {
-            notes.setVisibility(View.VISIBLE);
-            notes.setText("Catatan: " + v.notes);
+        if (v.notes != null && !v.notes.trim().isEmpty() && !v.notes.equals("-")) {
+            if (noteContainer != null) noteContainer.setVisibility(View.VISIBLE);
+            notes.setText(v.notes);
         } else {
-            notes.setVisibility(View.GONE);
+            if (noteContainer != null) noteContainer.setVisibility(View.GONE);
         }
 
         vioView.setOnClickListener(view -> showViolationDetailDialog(v));
@@ -360,11 +425,18 @@ public class ScanResultActivity extends AppCompatActivity {
         TextView notes = repView.findViewById(R.id.tvRepDetailNotes);
         TextView location = repView.findViewById(R.id.tvRepDetailLocation);
         TextView inspector = repView.findViewById(R.id.tvRepDetailInspector);
+        View noteContainer = repView.findViewById(R.id.llRepNoteContainer);
 
-        date.setText(v.date != null ? v.date : "-");
-        notes.setText(v.notes != null ? v.notes : "-");
-        location.setText("Lokasi: " + (v.location != null ? v.location : "-"));
-        inspector.setText("Oleh: " + (v.docNo != null ? v.docNo : "Petugas"));
+        if (date != null) date.setText(v.date != null ? v.date : "-");
+        if (location != null) location.setText(v.location != null ? v.location : "-");
+        if (inspector != null) inspector.setText(v.officer != null ? v.officer : "-");
+
+        if (v.notes != null && !v.notes.trim().isEmpty() && !v.notes.equals("-")) {
+            if (noteContainer != null) noteContainer.setVisibility(View.VISIBLE);
+            notes.setText(v.notes);
+        } else {
+            if (noteContainer != null) noteContainer.setVisibility(View.GONE);
+        }
 
         repView.setOnClickListener(view -> showViolationDetailDialog(v));
         detailBinding.llReprimandList.addView(repView);
@@ -372,16 +444,16 @@ public class ScanResultActivity extends AppCompatActivity {
 
     private void showViolationDetailDialog(Violation v) {
         DialogViolationDetailsBinding detailDialogBinding = DialogViolationDetailsBinding.inflate(getLayoutInflater());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(detailDialogBinding.getRoot());
-        AlertDialog dialog = builder.create();
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(detailDialogBinding.getRoot()).create();
 
         boolean isReprimand = "Teguran (Catatan)".equalsIgnoreCase(v.type);
         if (isReprimand) {
             detailDialogBinding.tvVioDetailTitle.setText("Detail Teguran");
+            detailDialogBinding.tvDetailOfficerLabel.setText("NAMA PENEGUR");
             detailDialogBinding.layoutDetailFine.setVisibility(View.GONE);
         } else {
             detailDialogBinding.tvVioDetailTitle.setText("Detail Pelanggaran");
+            detailDialogBinding.tvDetailOfficerLabel.setText("NAMA PETUGAS");
             detailDialogBinding.layoutDetailFine.setVisibility(View.VISIBLE);
         }
 
@@ -390,254 +462,76 @@ public class ScanResultActivity extends AppCompatActivity {
         detailDialogBinding.tvDetailLocation.setText(v.location);
         detailDialogBinding.tvDetailFine.setText(cleanFineAmount(v.fine));
         detailDialogBinding.tvDetailPlant.setText(v.plant);
-        detailDialogBinding.tvDetailDocNo.setText(v.docNo);
+        detailDialogBinding.tvDetailDocNo.setText(v.docNo != null ? v.docNo : "-");
+        detailDialogBinding.tvDetailOfficer.setText(v.officer != null ? v.officer : "-");
         detailDialogBinding.tvDetailNotes.setText(v.notes);
 
-        // Role Based Visibility
-        if ("admin".equalsIgnoreCase(userRole)) {
-            detailDialogBinding.btnEditVio.setVisibility(View.VISIBLE);
-            detailDialogBinding.btnDeleteVio.setVisibility(View.VISIBLE);
-        }
-
-        detailDialogBinding.btnDeleteVio.setOnClickListener(view -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Hapus")
-                .setMessage("Hapus catatan ini?")
-                .setPositiveButton("Ya", (d, w) -> {
-                    Executors.newSingleThreadExecutor().execute(() -> {
-                        AppDatabase.getDatabase(this).workerDao().deleteViolation(v);
-                        runOnUiThread(() -> dialog.dismiss());
-                    });
-                })
-                .setNegativeButton("Tidak", null)
-                .show();
-        });
-
-        detailDialogBinding.btnEditVio.setOnClickListener(view -> {
-            dialog.dismiss();
-            showEditViolationForm(v);
-        });
-
         detailDialogBinding.btnCloseDetail.setOnClickListener(view -> dialog.dismiss());
-        dialog.show();
-    }
-
-    private void showEditViolationForm(Violation v) {
-        DialogViolationFormBinding dialogBinding = DialogViolationFormBinding.inflate(getLayoutInflater());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialogBinding.getRoot());
-        AlertDialog dialog = builder.create();
-
-        dialogBinding.tvVioFormTitle.setText("Edit Catatan");
-        dialogBinding.etVioTypeManual.setText(v.type);
-        dialogBinding.etVioDate.setText(v.date);
-        dialogBinding.etVioLocation.setText(v.location);
-        dialogBinding.etVioFine.setText(v.fine);
-        dialogBinding.etVioPlant.setText(v.plant);
-        dialogBinding.etVioDocNo.setText(v.docNo);
-        dialogBinding.etInspectorName.setText(v.docNo); // Fallback for reprimands
-        dialogBinding.etVioNotes.setText(v.notes);
-
-        dialogBinding.btnVioCancel.setOnClickListener(view -> dialog.dismiss());
-        dialogBinding.btnVioSave.setOnClickListener(view -> {
-            v.type = dialogBinding.etVioTypeManual.getText().toString();
-            v.date = dialogBinding.etVioDate.getText().toString();
-            v.location = dialogBinding.etVioLocation.getText().toString();
-            v.fine = dialogBinding.etVioFine.getText().toString();
-            v.plant = dialogBinding.etVioPlant.getText().toString();
-            v.docNo = dialogBinding.etVioDocNo.getText().toString();
-            v.notes = dialogBinding.etVioNotes.getText().toString();
-
-            Executors.newSingleThreadExecutor().execute(() -> {
-                AppDatabase.getDatabase(this).workerDao().updateViolation(v);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Berhasil diperbarui", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
+        if ("admin".equalsIgnoreCase(userRole)) {
+            detailDialogBinding.btnDeleteVio.setVisibility(View.VISIBLE);
+            detailDialogBinding.btnDeleteVio.setOnClickListener(view -> {
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    AppDatabase.getDatabase(this).workerDao().deleteViolation(v);
+                    runOnUiThread(() -> dialog.dismiss());
                 });
             });
-        });
-        dialog.show();
-    }
-
-    private void showViolationForm(Worker worker) {
-        DialogViolationFormBinding dialogBinding = DialogViolationFormBinding.inflate(getLayoutInflater());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialogBinding.getRoot());
-        AlertDialog dialog = builder.create();
-
-        dialogBinding.tvVioFormTitle.setText("Tambah Pelanggaran \u2014 " + worker.name);
-        
-        // --- 1. Kolom Tanggal (Robust Numeric Auto-Format & Deletion Fix) ---
-        dialogBinding.etVioDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) {
-                        formatted = clean;
-                    } else if (cl <= 4) {
-                        formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    } else {
-                        formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                    }
-                }
-
-                current = formatted;
-                dialogBinding.etVioDate.setText(current);
-                dialogBinding.etVioDate.setSelection(current.length());
-            }
-
-            @Override public void afterTextChanged(Editable s) {}
-        });
-
-        // --- 2. Kolom Denda (Fix Zero-Loop with Boolean Flag & Stable Cursor) ---
-        dialogBinding.etVioFine.addTextChangedListener(new TextWatcher() {
-            private boolean isFormatting = false;
-            private String lastValid = "";
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (isFormatting) return;
-
-                // Strip suffix ",00" if present to prevent re-parsing zeros
-                String text = s.toString();
-                if (text.contains(",")) {
-                    text = text.substring(0, text.indexOf(","));
-                }
-
-                String input = text.replaceAll("[^\\d]", "");
-                if (input.isEmpty()) {
-                    isFormatting = true;
-                    dialogBinding.etVioFine.setText("");
-                    isFormatting = false;
-                    return;
-                }
-
-                isFormatting = true;
-                try {
-                    long parsed = Long.parseLong(input);
-                    String formatted = formatFineDisplay(parsed);
-                    
-                    dialogBinding.etVioFine.setText(formatted);
-                    // Stable cursor: Always before ",00"
-                    dialogBinding.etVioFine.setSelection(Math.max(0, formatted.length() - 3));
-                } catch (NumberFormatException e) {
-                    dialogBinding.etVioFine.setText(lastValid);
-                }
-                isFormatting = false;
-            }
-
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {
-                if (!isFormatting) lastValid = s.toString();
-            }
-        });
-
-        dialogBinding.btnVioCancel.setOnClickListener(v -> dialog.dismiss());
-        dialogBinding.btnVioSave.setOnClickListener(v -> {
-            String type = dialogBinding.etVioTypeManual.getText().toString().trim();
-            String date = dialogBinding.etVioDate.getText().toString();
-            String loc = dialogBinding.etVioLocation.getText().toString();
-            String notes = dialogBinding.etVioNotes.getText().toString();
-            String fine = dialogBinding.etVioFine.getText().toString();
-            String plant = dialogBinding.etVioPlant.getText().toString();
-            String docNo = dialogBinding.etVioDocNo.getText().toString();
-
-            if (type.isEmpty() || date.isEmpty() || loc.isEmpty()) {
-                Toast.makeText(this, "Jenis, Tanggal, dan Lokasi wajib diisi", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Executors.newSingleThreadExecutor().execute(() -> {
-                int count = AppDatabase.getDatabase(this).workerDao().getFormalViolationCount(worker.regNo);
-                if (count >= 5) {
-                    runOnUiThread(() -> Toast.makeText(this, "Batas maksimal 5 pelanggaran tercapai", Toast.LENGTH_LONG).show());
-                    return;
-                }
-
-                Violation violation = new Violation(worker.regNo.trim(), type, date, loc, notes);
-                violation.fine = fine;
-                violation.docNo = docNo;
-                violation.plant = plant;
-                AppDatabase.getDatabase(this).workerDao().insertViolation(violation);
-
-                // Update worker's primary fields for immediate UI consistency
-                worker.status = "Pelanggaran";
-                worker.violationType = type;
-                worker.dateOfEvent = date;
-                worker.fineAmount = fine;
-                worker.plantDiv = plant;
-                worker.eventLocation = loc;
-                worker.documentNo = docNo;
-                AppDatabase.getDatabase(this).workerDao().update(worker);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Pelanggaran berhasil dicatat", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                });
-            });
-        });
+        }
         dialog.show();
     }
 
     private void showReprimandDialog(Worker worker) {
         DialogViolationFormBinding dialogBinding = DialogViolationFormBinding.inflate(getLayoutInflater());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialogBinding.getRoot());
-        AlertDialog dialog = builder.create();
-        dialogBinding.tvVioFormTitle.setText("Teguran \u2014 " + worker.name);
-        
-        // Use the new container to hide specific fields cleanly
-        if (dialogBinding.layoutVioSpecificFields != null) {
-            dialogBinding.layoutVioSpecificFields.setVisibility(View.GONE);
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(dialogBinding.getRoot()).create();
+        dialogBinding.tvVioFormTitle.setText("Teguran — " + worker.name);
+        if (dialogBinding.tilInspectorName != null) {
+            dialogBinding.tilInspectorName.setHint("Nama Penegur");
         }
         
+        // Hide specific fields but keep No. Dokumen visible
+        if (dialogBinding.etVioTypeManual != null) ((View)dialogBinding.etVioTypeManual.getParent().getParent()).setVisibility(View.GONE);
+        if (dialogBinding.etVioDate != null) ((View)dialogBinding.etVioDate.getParent().getParent()).setVisibility(View.GONE);
+        if (dialogBinding.etVioFine != null) ((View)dialogBinding.etVioFine.getParent().getParent()).setVisibility(View.GONE);
+        if (dialogBinding.etVioPlant != null) ((View)dialogBinding.etVioPlant.getParent().getParent()).setVisibility(View.GONE);
+        
         dialogBinding.etVioTypeManual.setText("Teguran (Catatan)");
-
         dialogBinding.btnVioCancel.setOnClickListener(v -> dialog.dismiss());
         dialogBinding.btnVioSave.setOnClickListener(v -> {
-            String inspectorName = (dialogBinding.etInspectorName != null && dialogBinding.etInspectorName.getText() != null) ?
-                                  dialogBinding.etInspectorName.getText().toString() : "";
-            String notes = (dialogBinding.etVioNotes != null && dialogBinding.etVioNotes.getText() != null) ? 
-                          dialogBinding.etVioNotes.getText().toString() : "";
-            String location = (dialogBinding.etVioLocation != null && dialogBinding.etVioLocation.getText() != null) ? 
-                          dialogBinding.etVioLocation.getText().toString() : "-";
-
-            if (inspectorName.isEmpty()) {
-                Toast.makeText(this, "Nama Penegur tidak boleh kosong", Toast.LENGTH_SHORT).show();
+            String docNo = dialogBinding.etVioDocNo.getText().toString();
+            String notes = dialogBinding.etVioNotes.getText().toString();
+            String inspectorName = dialogBinding.etInspectorName.getText().toString();
+            String location = dialogBinding.etVioLocation.getText().toString();
+            
+            if (notes.isEmpty() || inspectorName.isEmpty()) {
+                Toast.makeText(this, "Harap isi Catatan dan Nama Penegur", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (notes.isEmpty()) {
-                Toast.makeText(this, "Catatan tidak boleh kosong", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            
             String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            
             Executors.newSingleThreadExecutor().execute(() -> {
-                Violation violation = new Violation(worker.regNo.trim(), "Teguran (Catatan)", today, location, notes);
+                Violation violation = new Violation(worker.regNo, "Teguran (Catatan)", today, location.isEmpty() ? "-" : location, notes);
                 violation.fine = "-";
-                violation.docNo = inspectorName;
+                violation.docNo = docNo.isEmpty() ? "-" : docNo;
+                violation.officer = inspectorName;
                 violation.plant = worker.plantDiv != null ? worker.plantDiv : "-";
+                violation.dataSource = "Input di HP";
                 AppDatabase.getDatabase(this).workerDao().insertViolation(violation);
-
-                // Update worker's primary fields for immediate UI consistency
-                worker.status = "Pelanggaran"; 
+                
+                // Update worker
+                if (worker.status == null || !worker.status.equalsIgnoreCase("Pelanggaran")) {
+                    worker.status = "Teguran";
+                }
                 worker.violationType = "Teguran (Catatan)";
                 worker.dateOfEvent = today;
-                worker.eventLocation = location;
-                worker.documentNo = inspectorName;
+                worker.eventLocation = location.isEmpty() ? "-" : location;
+                worker.documentNo = docNo.isEmpty() ? "-" : docNo;
+                worker.inspectorName = inspectorName;
+                worker.dataSource = "Input di HP";
                 AppDatabase.getDatabase(this).workerDao().update(worker);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Teguran berhasil dicatat", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
+                
+                runOnUiThread(() -> { 
+                    Toast.makeText(this, "Berhasil dicatat", Toast.LENGTH_SHORT).show(); 
+                    dialog.dismiss(); 
                 });
             });
         });
@@ -646,19 +540,8 @@ public class ScanResultActivity extends AppCompatActivity {
 
     private void addTrainingItemToUi(Training t) {
         View trainView = getLayoutInflater().inflate(R.layout.item_training_detail, detailBinding.llTrainingList, false);
-        TextView title = trainView.findViewById(R.id.tvTrainTitle);
-        TextView status = trainView.findViewById(R.id.tvTrainStatus);
-        TextView date = trainView.findViewById(R.id.tvTrainDate);
-        TextView loc = trainView.findViewById(R.id.tvTrainLocation);
-        title.setText(t.trainingTitle);
-        status.setText(t.passFail != null ? t.passFail.toUpperCase() : "PASS");
-        date.setText(t.date != null ? t.date : "-");
-        loc.setText(t.trainingLocation != null ? t.trainingLocation : "-");
-        if (t.passFail != null && t.passFail.equalsIgnoreCase("FAIL")) {
-            status.setBackgroundResource(R.drawable.bg_status_pill_error);
-        } else {
-            status.setBackgroundResource(R.drawable.bg_status_pill_success);
-        }
+        ((TextView)trainView.findViewById(R.id.tvTrainTitle)).setText(t.trainingTitle);
+        ((TextView)trainView.findViewById(R.id.tvTrainStatus)).setText(t.passFail != null ? t.passFail : "PASS");
         trainView.setOnClickListener(v -> showTrainingDetailsDialog(t));
         detailBinding.llTrainingList.addView(trainView);
     }
@@ -667,36 +550,25 @@ public class ScanResultActivity extends AppCompatActivity {
         DialogTrainingDetailsBinding detailsBinding = DialogTrainingDetailsBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(this).setView(detailsBinding.getRoot()).create();
         detailsBinding.tvTrainTitleInfo.setText(t.trainingTitle);
-        detailsBinding.tvTrainDateInfo.setText(t.date != null ? t.date : "-");
-        detailsBinding.tvTrainTimeInfo.setText(t.time != null ? t.time : "-");
-        detailsBinding.tvTrainEndTimeInfo.setText(t.endTime != null ? t.endTime : "-");
-        detailsBinding.tvTrainHoursInfo.setText(t.trainingHours != null ? t.trainingHours : "-");
-        detailsBinding.tvTrainLocInfo.setText(t.trainingLocation != null ? t.trainingLocation : "-");
-        detailsBinding.tvTrainResultInfo.setText(t.passFail != null ? t.passFail : "-");
-
-        if ("admin".equalsIgnoreCase(userRole)) {
-            detailsBinding.btnTrainDelete.setVisibility(View.VISIBLE);
-        } else {
-            detailsBinding.btnTrainDelete.setVisibility(View.GONE);
-        }
-
-        detailsBinding.btnTrainDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Hapus Data Training")
-                .setMessage("Apakah Anda yakin ingin menghapus data training ini?")
-                .setPositiveButton("Hapus", (d, w) -> {
-                    Executors.newSingleThreadExecutor().execute(() -> {
-                        AppDatabase.getDatabase(this).workerDao().deleteTraining(t);
-                        runOnUiThread(() -> {
-                            Toast.makeText(this, "Data Training berhasil dihapus", Toast.LENGTH_SHORT).show();
-                            dialog.dismiss();
-                        });
-                    });
-                })
-                .setNegativeButton("Batal", null)
-                .show();
-        });
+        detailsBinding.tvTrainDateInfo.setText(t.date);
         detailsBinding.btnTrainDetailClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void addAccidentItemToUi(Accident a) {
+        View accView = getLayoutInflater().inflate(R.layout.item_accident_detail, detailBinding.llAccidentList, false);
+        ((TextView)accView.findViewById(R.id.tvAccidentDate)).setText(a.date);
+        ((TextView)accView.findViewById(R.id.tvAccidentSeverity)).setText(a.severity);
+        accView.setOnClickListener(v -> showAccidentDetailsDialog(a));
+        detailBinding.llAccidentList.addView(accView);
+    }
+
+    private void showAccidentDetailsDialog(Accident a) {
+        DialogAccidentDetailsBinding detailsBinding = DialogAccidentDetailsBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(detailsBinding.getRoot()).create();
+        detailsBinding.tvAccidentDetailSeverity.setText(a.severity);
+        detailsBinding.tvAccidentDetailChronology.setText(a.chronology);
+        detailsBinding.btnAccidentClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 }

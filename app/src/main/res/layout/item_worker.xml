@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/ModernCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp">
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E2E8F0"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/tvName"
@@ -24,19 +28,19 @@
                 android:layout_height="wrap_content"
                 android:text="NAMA PEKERJA"
                 android:textColor="@color/text_high"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium" />
 
             <TextView
                 android:id="@+id/tvRegNo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:text="REG NO: 1203232"
                 android:textColor="@color/text_low"
-                android:textSize="12sp"
-                android:letterSpacing="0.05" />
+                android:textSize="12sp" />
 
-            <!-- Status Badge (Chip) - Horizontal Row below REG NO -->
+            <!-- Status Badges Row -->
             <LinearLayout
                 android:id="@+id/statusContainer"
                 android:layout_width="match_parent"
@@ -49,167 +53,165 @@
                     android:id="@+id/tvStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill"
+                    android:background="@drawable/bg_status_pill_violation"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="2 PELANGGARAN"
-                    android:textColor="@android:color/white"
-                    android:textSize="9sp"
+                    android:paddingVertical="4dp"
+                    android:text="1 Pelanggaran"
+                    android:textColor="@color/semantic_error_text"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:gravity="center"
                     android:layout_marginEnd="8dp" />
 
                 <TextView
                     android:id="@+id/tvStatusReprimand"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_reprimand_card"
+                    android:background="@drawable/bg_status_pill_reprimand"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="2 TEGURAN"
-                    android:textColor="@android:color/white"
-                    android:textSize="9sp"
+                    android:paddingVertical="4dp"
+                    android:text="1 Teguran"
+                    android:textColor="@color/semantic_warning_text"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:gravity="center"
-                    android:layout_marginEnd="8dp"
-                    android:visibility="gone" />
+                    android:layout_marginEnd="8dp" />
 
                 <TextView
                     android:id="@+id/tvStatusAccident"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill_error"
-                    android:backgroundTint="#800000"
+                    android:background="@drawable/bg_status_pill_accident"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="2 KECELAKAAN"
-                    android:textColor="@android:color/white"
-                    android:textSize="9sp"
+                    android:paddingVertical="4dp"
+                    android:text="1 Kecelakaan"
+                    android:textColor="@color/semantic_error_text"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:gravity="center"
-                    android:layout_marginEnd="8dp"
-                    android:visibility="gone" />
+                    android:layout_marginEnd="8dp" />
 
                 <TextView
-                    android:id="@+id/tvStatusTraining"
+                    android:id="@+id/tvStatusClean"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_status_pill_info"
+                    android:background="@drawable/bg_status_pill_clean"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="TRAINING"
-                    android:textColor="@android:color/white"
-                    android:textSize="9sp"
+                    android:paddingVertical="4dp"
+                    android:text="Bersih"
+                    android:textColor="@color/semantic_success_text"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:gravity="center"
                     android:visibility="gone" />
             </LinearLayout>
+
+            <!-- Data Grid 2 Column -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:columnCount="2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="JABATAN"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_low"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05" />
+                    <TextView
+                        android:id="@+id/tvPosition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Position"
+                        android:textColor="@color/text_medium"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="KONTRAKTOR"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_low"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05" />
+                    <TextView
+                        android:id="@+id/tvContractor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Contractor Name"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:textColor="@color/text_medium"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </GridLayout>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginVertical="12dp"
-            android:background="@color/divider_light" />
+            android:background="#F1F5F9" />
 
-        <!-- Sekunder Data (Bento Style) -->
+        <!-- Actions Grid 3 Column -->
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:rowCount="1">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="JABATAN"
-                    android:textSize="10sp"
-                    android:textColor="@color/text_low" />
-                <TextView
-                    android:id="@+id/tvPosition"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="POSITION"
-                    android:textColor="@color/text_medium"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="KONTRAKTOR"
-                    android:textSize="10sp"
-                    android:textColor="@color/text_low" />
-                <TextView
-                    android:id="@+id/tvContractor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CONTRACTOR NAME"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:textColor="@color/text_medium"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </GridLayout>
-
-        <!-- Hidden details for summary/preview if needed, or just let them be shown in bottom sheet -->
-        <!-- For now, I'll keep the buttons for backward compatibility in the adapter -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="end"
-            android:orientation="horizontal">
+            android:columnCount="3">
 
             <TextView
                 android:id="@+id/btnViolation"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
+                android:layout_columnWeight="1"
+                android:paddingVertical="12dp"
                 android:text="Pelanggaran"
-                android:textColor="@color/alert_terracotta"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:gravity="center"
+                android:textColor="@color/semantic_error_main"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium"
+                android:background="?attr/selectableItemBackground" />
 
             <TextView
                 android:id="@+id/btnEdit"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
+                android:layout_columnWeight="1"
+                android:paddingVertical="12dp"
                 android:text="Edit"
-                android:textColor="@color/accent_teal"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:gravity="center"
+                android:textColor="@color/semantic_action_netral"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium"
+                android:background="?attr/selectableItemBackground" />
 
             <TextView
                 android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
+                android:layout_columnWeight="1"
+                android:paddingVertical="12dp"
                 android:text="Hapus"
-                android:textColor="@color/alert_terracotta"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:gravity="center"
+                android:textColor="@color/semantic_error_main"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium"
+                android:background="?attr/selectableItemBackground" />
+        </GridLayout>
 
-        <!-- Hidden fields to avoid breaking adapter binding -->
+        <!-- Hidden fields for compatibility -->
+        <TextView android:id="@+id/tvStatusTraining" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/tvEventDate" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/tvVioType" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
         <View android:id="@+id/tvFine" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
