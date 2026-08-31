@@ -62,16 +62,6 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvSelectedWorker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_status_pill_success"
-            android:padding="8dp"
-            android:text="Kontraktor: -"
-            android:textColor="@color/white"
-            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/layoutVioSpecificFields"

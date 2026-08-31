@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="20dp"
             android:text="Form Training"
             android:textColor="@color/text_high"
             android:textSize="20sp"
@@ -24,10 +24,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cari &amp; Pilih Kontraktor"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textColor="@color/text_low"
             android:layout_marginStart="4dp"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="2dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -42,33 +42,26 @@
                 android:id="@+id/etWorkerSearch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="14sp"
                 android:textColor="@color/text_high" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvWorkerSearch"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:layout_marginBottom="16dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
             android:background="@drawable/bg_search_modern"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/tvSelectedWorker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_status_pill_success"
-            android:padding="8dp"
-            android:text="Kontraktor Terpilih: -"
-            android:textColor="@color/white"
-            android:visibility="gone" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:hint="Judul Training"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
@@ -76,6 +69,9 @@
                 android:id="@+id/etTrainingTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="14sp"
                 android:textColor="@color/text_high" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -83,7 +79,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:hint="Tanggal Training"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
@@ -91,6 +87,9 @@
                 android:id="@+id/etTrainingDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="14sp"
                 android:textColor="@color/text_high" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -98,7 +97,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:hint="Jam Mulai"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
@@ -106,6 +105,9 @@
                 android:id="@+id/etTrainingTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="14sp"
                 android:textColor="@color/text_high" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -113,7 +115,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:hint="Jam Selesai"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
@@ -121,6 +123,9 @@
                 android:id="@+id/etTrainingEndTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="14sp"
                 android:textColor="@color/text_high" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -128,7 +133,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:hint="Lokasi Training"
             app:boxStrokeColor="@color/accent_teal"
             app:hintTextColor="@color/accent_teal">
@@ -136,6 +141,9 @@
                 android:id="@+id/etTrainingLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="14sp"
                 android:textColor="@color/text_high" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -148,14 +156,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Kelulusan (Pass/Fail)"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textColor="@color/text_low"
                 android:layout_marginStart="4dp"
-                android:layout_marginBottom="4dp" />
+                android:layout_marginBottom="2dp" />
             <Spinner
                 android:id="@+id/spinnerPassFail"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="48dp"
                 android:background="@drawable/bg_search_modern"
                 android:paddingHorizontal="12dp" />
         </LinearLayout>

@@ -58,7 +58,7 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         if (stats.violationCount > 0) {
             holder.binding.tvStatus.setText(stats.violationCount + " Pelanggaran");
             holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pill_violation);
-            holder.binding.tvStatus.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_error_text));
+            holder.binding.tvStatus.setTextColor(Color.WHITE);
             holder.binding.tvStatus.setVisibility(View.VISIBLE);
             hasCriticalInfo = true;
         } else {
@@ -69,7 +69,7 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         if (stats.reprimandCount > 0) {
             holder.binding.tvStatusReprimand.setText(stats.reprimandCount + " Teguran");
             holder.binding.tvStatusReprimand.setBackgroundResource(R.drawable.bg_status_pill_reprimand);
-            holder.binding.tvStatusReprimand.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_warning_text));
+            holder.binding.tvStatusReprimand.setTextColor(Color.WHITE);
             holder.binding.tvStatusReprimand.setVisibility(View.VISIBLE);
             hasCriticalInfo = true;
         } else {
@@ -80,7 +80,7 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         if (stats.accidentCount > 0) {
             holder.binding.tvStatusAccident.setText(stats.accidentCount + " Kecelakaan");
             holder.binding.tvStatusAccident.setBackgroundResource(R.drawable.bg_status_pill_accident);
-            holder.binding.tvStatusAccident.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_error_text));
+            holder.binding.tvStatusAccident.setTextColor(holder.itemView.getContext().getColor(R.color.white));
             holder.binding.tvStatusAccident.setVisibility(View.VISIBLE);
             hasCriticalInfo = true;
         } else {
@@ -90,16 +90,17 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         // 4. Clean Status
         if (!hasCriticalInfo) {
             holder.binding.tvStatusClean.setVisibility(View.VISIBLE);
-            holder.binding.tvStatusClean.setTextColor(holder.itemView.getContext().getColor(R.color.semantic_success_text));
+            holder.binding.tvStatusClean.setBackgroundResource(R.drawable.bg_status_pill_clean);
+            holder.binding.tvStatusClean.setTextColor(Color.WHITE);
         } else {
             holder.binding.tvStatusClean.setVisibility(View.GONE);
         }
 
         // 3. Training Check
         if (stats.trainingCount > 0) {
-            holder.binding.tvStatusTraining.setText(stats.trainingCount + " TRAINING");
+            holder.binding.tvStatusTraining.setText(stats.trainingCount + " Training");
             holder.binding.tvStatusTraining.setBackgroundResource(R.drawable.bg_status_pill_info);
-            holder.binding.tvStatusTraining.setTextColor(Color.parseColor("#00B894"));
+            holder.binding.tvStatusTraining.setTextColor(Color.WHITE);
             holder.binding.tvStatusTraining.setVisibility(View.VISIBLE);
         } else {
             holder.binding.tvStatusTraining.setVisibility(View.GONE);

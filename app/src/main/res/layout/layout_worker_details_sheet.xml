@@ -100,13 +100,14 @@
             </LinearLayout>
         </GridLayout>
 
-        <!-- Actions Row (Smooth Buttons) -->
+        <!-- Actions Grid (2 Rows x 2 Columns) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="vertical">
 
+            <!-- Baris Pertama: Pelanggaran & Kecelakaan -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -119,9 +120,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="TAMBAH PELANGGARAN"
-                    android:textSize="9sp"
-                    android:insetBottom="0dp"
-                    android:insetTop="0dp" />
+                    android:textSize="9sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/tvSheetAccidentBadge"
@@ -131,20 +130,38 @@
                     android:layout_weight="1"
                     android:layout_marginStart="12dp"
                     android:text="TAMBAH KECELAKAAN"
-                    android:textSize="9sp"
-                    android:insetBottom="0dp"
-                    android:insetTop="0dp" />
+                    android:textSize="9sp" />
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddNoteSheet"
-                style="@style/SmoothTeguranButton"
-                android:layout_width="wrap_content"
+            <!-- Baris Kedua: Training & Teguran -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_gravity="center_horizontal"
-                android:text="Berikan Teguran (Catatan)"
-                app:icon="@android:drawable/ic_menu_edit" />
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/tvSheetTrainingBadge"
+                    style="@style/SmoothTrainingButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TAMBAH TRAINING"
+                    android:textSize="9sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddNoteSheet"
+                    style="@style/SmoothTeguranButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:text="BERIKAN TEGURAN"
+                    android:textSize="9sp"
+                    app:icon="@android:drawable/ic_menu_edit"
+                    app:iconSize="14dp"
+                    app:iconPadding="4dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -175,7 +192,7 @@
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="2dp"
                     android:text="0"
-                    android:textColor="@color/violation_primary"
+                    android:textColor="@color/white"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -218,7 +235,7 @@
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="2dp"
                     android:text="0"
-                    android:textColor="@color/reprimand_primary"
+                    android:textColor="@color/white"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -248,17 +265,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Riwayat Pelatihan (Training)"
-                    android:textColor="@color/text_high"
-                    android:textSize="15sp"
+                    android:textColor="@color/accent_teal"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
                 <TextView
                     android:id="@+id/tvSheetTrainingCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="(0)"
-                    android:textColor="@color/text_low"
-                    android:textSize="12sp" />
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_status_pill_info"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="2dp"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -298,7 +319,7 @@
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="2dp"
                     android:text="0"
-                    android:textColor="@color/accident_primary"
+                    android:textColor="@color/white"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>

@@ -28,7 +28,7 @@
                 android:layout_height="20dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_history_indicator"
+                android:src="@drawable/ic_medical_services"
                 app:tint="@color/accident_primary"
                 android:contentDescription="Accident Icon" />
 
@@ -112,16 +112,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
         </GridLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Ketuk untuk detail kronologis"
-            android:textColor="@color/accident_primary"
-            android:textSize="11sp"
-            android:textStyle="italic"
-            android:alpha="0.8" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

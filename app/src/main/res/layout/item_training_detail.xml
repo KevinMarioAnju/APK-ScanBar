@@ -28,7 +28,7 @@
                 android:layout_height="22dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_history_indicator"
+                android:src="@drawable/ic_school"
                 app:tint="#00B894" />
 
             <TextView
@@ -51,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:background="@drawable/bg_status_pill_success"
+                android:background="@drawable/bg_status_pill_info"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="3dp"
                 android:text="PASS"
@@ -169,16 +169,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
         </GridLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Ketuk untuk detail pelatihan"
-            android:textColor="#00B894"
-            android:textSize="11sp"
-            android:textStyle="italic"
-            android:alpha="0.8" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <corners android:radius="8dp" />
-    <solid android:color="@color/semantic_error_bg" />
-    <stroke android:width="1dp" android:color="@color/semantic_error_main" android:alpha="0.2" />
+    <corners android:radius="24dp" />
+    <solid android:color="@color/accident_dark_red" />
 </shape>

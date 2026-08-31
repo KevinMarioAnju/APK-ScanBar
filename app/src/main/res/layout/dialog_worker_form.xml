@@ -15,7 +15,7 @@
             android:id="@+id/tvFormTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="20dp"
             android:text="Data Kontraktor"
             android:textColor="@color/text_high"
             android:textSize="20sp"
@@ -31,7 +31,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:hint="No. Registrasi"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
@@ -39,6 +39,9 @@
                     android:id="@+id/etRegNo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_high" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -46,7 +49,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:hint="Nama Kontraktor"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
@@ -54,6 +57,9 @@
                     android:id="@+id/etName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_high" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -61,7 +67,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:hint="Kontraktor"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
@@ -69,6 +75,9 @@
                     android:id="@+id/etContractor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_high" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,7 +85,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:hint="Jabatan"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
@@ -84,6 +93,9 @@
                     android:id="@+id/etPosition"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_high" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -91,7 +103,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:hint="Plant / Divisi"
                 app:boxStrokeColor="@color/accent_teal"
                 app:hintTextColor="@color/accent_teal">
@@ -99,6 +111,9 @@
                     android:id="@+id/etWorkerPlant"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_high" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -109,7 +124,7 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="horizontal"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="8dp">
             <Button
                 android:id="@+id/btnCancel"
                 style="@style/Widget.Material3.Button.TextButton"

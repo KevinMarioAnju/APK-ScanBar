@@ -724,8 +724,6 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         dialogBinding.tvAccidentFormTitle.setText("Kecelakaan — " + worker.name);
         dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.tvAccidentSelectedWorker.setText("Kontraktor: " + worker.name);
-        dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);
@@ -778,6 +776,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         final Worker[] selectedWorker = {null};
+        final boolean[] isSelecting = {false};
 
         // Setup Severity Spinner
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
@@ -789,17 +788,30 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.etAccidentWorkerSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isSelecting[0]) return;
                 String query = s.toString().trim();
                 if (query.length() >= 2) {
                     workerDao.searchWorkers(query).observe(getViewLifecycleOwner(), workers -> {
                         if (workers != null && !workers.isEmpty()) {
                             dialogBinding.rvAccidentWorkerSearch.setVisibility(View.VISIBLE);
                             setupMinimalWorkerList(dialogBinding.rvAccidentWorkerSearch, workers, worker -> {
+                                isSelecting[0] = true;
                                 selectedWorker[0] = worker;
-                                dialogBinding.tvAccidentSelectedWorker.setText("Kontraktor Terpilih: " + worker.name);
-                                dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
+                                
+                                // Auto-hide search results
                                 dialogBinding.rvAccidentWorkerSearch.setVisibility(View.GONE);
+
+                                // Fill input and clear focus
                                 dialogBinding.etAccidentWorkerSearch.setText(worker.name);
+                                dialogBinding.etAccidentWorkerSearch.clearFocus();
+                                
+                                // Close keyboard
+                                if (getContext() != null) {
+                                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) 
+                                            getContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                                    if (imm != null) imm.hideSoftInputFromWindow(dialogBinding.etAccidentWorkerSearch.getWindowToken(), 0);
+                                }
+                                isSelecting[0] = false;
                             });
                         } else {
                             dialogBinding.rvAccidentWorkerSearch.setVisibility(View.GONE);
@@ -856,6 +868,61 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialog.show();
     }
 
+    private void showTrainingDialogForWorker(Worker worker) {
+        com.example.scanbar.databinding.DialogTrainingFormBinding dialogBinding = 
+                com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+
+        // Hide search components as worker is known
+        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
+        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+
+        String[] options = {"PASS", "FAIL"};
+        ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);
+        pfAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerPassFail.setAdapter(pfAdapter);
+
+        dialogBinding.btnTrainingCancel.setOnClickListener(v -> dialog.dismiss());
+        setupDateFormat(dialogBinding.etTrainingDate);
+        setupTimeFormat(dialogBinding.etTrainingTime);
+        setupTimeFormat(dialogBinding.etTrainingEndTime);
+
+        dialogBinding.btnTrainingSave.setOnClickListener(v -> {
+            String title = dialogBinding.etTrainingTitle.getText().toString();
+            String date = dialogBinding.etTrainingDate.getText().toString();
+            String startTime = dialogBinding.etTrainingTime.getText().toString();
+            String endTime = dialogBinding.etTrainingEndTime.getText().toString();
+            String location = dialogBinding.etTrainingLocation.getText().toString();
+            String result = dialogBinding.spinnerPassFail.getSelectedItem().toString();
+
+            if (title.isEmpty()) {
+                Toast.makeText(getContext(), "Judul training harus diisi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                com.example.scanbar.data.Training t = new com.example.scanbar.data.Training(worker.regNo, title, date);
+                t.time = startTime;
+                t.endTime = endTime;
+                t.trainingLocation = location;
+                t.passFail = result;
+                t.dataSource = "Input di HP";
+                t.trainingHours = calculateDuration(startTime, endTime);
+                
+                workerDao.insertTraining(t);
+                
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Data Training berhasil disimpan", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    showWorkerDetailsSheet(worker); // Refresh sheet
+                });
+            });
+        });
+        dialog.show();
+    }
+
     private void showTrainingDialog() {
         com.example.scanbar.databinding.DialogTrainingFormBinding dialogBinding = 
                 com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
@@ -864,6 +931,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         final Worker[] selectedWorker = {null};
+        final boolean[] isSelecting = {false};
 
         // Setup Pass/Fail Spinner
         String[] options = {"PASS", "FAIL"};
@@ -875,17 +943,30 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.etWorkerSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isSelecting[0]) return;
                 String query = s.toString().trim();
                 if (query.length() >= 2) {
                     workerDao.searchWorkers(query).observe(getViewLifecycleOwner(), workers -> {
                         if (workers != null && !workers.isEmpty()) {
                             dialogBinding.rvWorkerSearch.setVisibility(View.VISIBLE);
                             setupMinimalWorkerList(dialogBinding.rvWorkerSearch, workers, worker -> {
+                                isSelecting[0] = true;
                                 selectedWorker[0] = worker;
-                                dialogBinding.tvSelectedWorker.setText("Kontraktor Terpilih: " + worker.name);
-                                dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
+                                
+                                // Auto-hide search results
                                 dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+                                
+                                // Fill input and clear focus
                                 dialogBinding.etWorkerSearch.setText(worker.name);
+                                dialogBinding.etWorkerSearch.clearFocus();
+                                
+                                // Close keyboard
+                                if (getContext() != null) {
+                                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) 
+                                            getContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                                    if (imm != null) imm.hideSoftInputFromWindow(dialogBinding.etWorkerSearch.getWindowToken(), 0);
+                                }
+                                isSelecting[0] = false;
                             });
                         } else {
                             dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
@@ -1213,6 +1294,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         final Worker[] selectedWorker = {null};
+        final boolean[] isSelecting = {false};
 
         dialogBinding.tvVioFormTitle.setText("Tambah Pelanggaran");
         if (dialogBinding.tilInspectorName != null) {
@@ -1224,17 +1306,30 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         dialogBinding.etWorkerSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isSelecting[0]) return;
                 String query = s.toString().trim();
                 if (query.length() >= 2) {
                     workerDao.searchWorkers(query).observe(getViewLifecycleOwner(), workers -> {
                         if (workers != null && !workers.isEmpty()) {
                             dialogBinding.rvWorkerSearch.setVisibility(View.VISIBLE);
                             setupMinimalWorkerList(dialogBinding.rvWorkerSearch, workers, worker -> {
+                                isSelecting[0] = true;
                                 selectedWorker[0] = worker;
-                                dialogBinding.tvSelectedWorker.setText("Kontraktor: " + worker.name);
-                                dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
+                                
+                                // Auto-hide search results
                                 dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+                                
+                                // Fill input and clear focus
                                 dialogBinding.etWorkerSearch.setText(worker.name);
+                                dialogBinding.etWorkerSearch.clearFocus();
+                                
+                                // Close keyboard
+                                if (getContext() != null) {
+                                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) 
+                                            getContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                                    if (imm != null) imm.hideSoftInputFromWindow(dialogBinding.etWorkerSearch.getWindowToken(), 0);
+                                }
+                                isSelecting[0] = false;
                             });
                         } else {
                             dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
@@ -1352,8 +1447,6 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         
         // Hide worker search since worker is already known
         dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
-        dialogBinding.tvSelectedWorker.setText("Kontraktor: " + worker.name);
-        dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
 
         // --- 1. Kolom Tanggal ---
         setupDateFormat(dialogBinding.etVioDate);
@@ -1562,6 +1655,11 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             showAccidentDialogForWorker(worker);
         });
 
+        sheetBinding.tvSheetTrainingBadge.setOnClickListener(v -> {
+            dialog.dismiss();
+            showTrainingDialogForWorker(worker);
+        });
+
         sheetBinding.btnAddNoteSheet.setOnClickListener(v -> {
             dialog.dismiss();
             showReprimandDialogFromSheet(worker);
@@ -1631,13 +1729,13 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             sheetBinding.llTrainingList.removeAllViews();
             if (trainings != null && !trainings.isEmpty()) {
                 sheetBinding.llTrainingSection.setVisibility(View.VISIBLE);
-                sheetBinding.tvSheetTrainingCount.setText("(" + trainings.size() + ")");
+                sheetBinding.tvSheetTrainingCount.setText(String.valueOf(trainings.size()));
                 for (com.example.scanbar.data.Training t : trainings) {
                     addTrainingItemToUi(sheetBinding.llTrainingList, t);
                 }
             } else {
                 sheetBinding.llTrainingSection.setVisibility(View.GONE);
-                sheetBinding.tvSheetTrainingCount.setText("(0)");
+                sheetBinding.tvSheetTrainingCount.setText("0");
             }
         });
 
@@ -1731,9 +1829,9 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         loc.setText(t.trainingLocation != null ? t.trainingLocation : "-");
 
         if (t.passFail != null && t.passFail.equalsIgnoreCase("FAIL")) {
-            status.setBackgroundResource(R.drawable.bg_status_pill_error);
+            status.setBackgroundResource(R.drawable.bg_status_pill_violation);
         } else {
-            status.setBackgroundResource(R.drawable.bg_status_pill_success);
+            status.setBackgroundResource(R.drawable.bg_status_pill_info);
         }
 
         trainView.setOnClickListener(v -> showTrainingDetailsDialog(t));
@@ -1795,8 +1893,6 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         // Setup UI for edit mode
-        dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
-        dialogBinding.tvSelectedWorker.setText("Pekerja: " + t.workerRegNo);
 
         // Hide search components
         dialogBinding.etWorkerSearch.setVisibility(View.GONE);
@@ -1868,8 +1964,6 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         dialogBinding.tvAccidentFormTitle.setText("Edit Kecelakaan");
         dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
-        dialogBinding.tvAccidentSelectedWorker.setText("Pekerja: " + a.workerRegNo);
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);

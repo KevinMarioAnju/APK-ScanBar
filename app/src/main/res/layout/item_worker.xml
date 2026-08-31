@@ -61,10 +61,11 @@
                         android:background="@drawable/bg_status_pill_violation"
                         android:gravity="center"
                         android:text="1 Pelanggaran"
-                        android:textColor="@color/semantic_error_text"
+                        android:textColor="@color/white"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_marginEnd="8dp"
+                        android:paddingHorizontal="12dp" />
 
                     <TextView
                         android:id="@+id/tvStatusReprimand"
@@ -74,9 +75,10 @@
                         android:background="@drawable/bg_status_pill_reprimand"
                         android:gravity="center"
                         android:text="1 Teguran"
-                        android:textColor="@color/semantic_warning_text"
+                        android:textColor="@color/white"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:paddingHorizontal="12dp" />
                 </LinearLayout>
 
                 <!-- Row 2: Kecelakaan & Pelatihan -->
@@ -94,10 +96,11 @@
                         android:background="@drawable/bg_status_pill_accident"
                         android:gravity="center"
                         android:text="1 Kecelakaan"
-                        android:textColor="@color/semantic_error_text"
+                        android:textColor="@color/white"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_marginEnd="8dp"
+                        android:paddingHorizontal="12dp" />
 
                     <TextView
                         android:id="@+id/tvStatusTraining"
@@ -106,11 +109,12 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_status_pill_info"
                         android:gravity="center"
-                        android:text="1 TRAINING"
-                        android:textColor="#00B894"
+                        android:text="1 Training"
+                        android:textColor="@color/white"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        android:paddingHorizontal="12dp" />
                 </LinearLayout>
 
                 <!-- Status Bersih -->

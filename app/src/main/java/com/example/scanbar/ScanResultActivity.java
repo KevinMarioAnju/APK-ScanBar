@@ -7,6 +7,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -115,6 +116,7 @@ public class ScanResultActivity extends AppCompatActivity {
         // Action Buttons Setup
         detailBinding.tvDetailViolationBadge.setOnClickListener(v -> showViolationForm(worker));
         detailBinding.tvDetailAccidentBadge.setOnClickListener(v -> showAccidentForm(worker));
+        detailBinding.tvDetailTrainingBadge.setOnClickListener(v -> showTrainingForm(worker));
         detailBinding.btnAddNote.setOnClickListener(v -> showReprimandDialog(worker));
 
         AppDatabase.getDatabase(this).workerDao().getViolationsByWorker(worker.regNo).observe(this, violations -> {
@@ -171,13 +173,13 @@ public class ScanResultActivity extends AppCompatActivity {
                 detailBinding.llTrainingList.removeAllViews();
                 if (trainings != null && !trainings.isEmpty()) {
                     detailBinding.llTrainingSection.setVisibility(View.VISIBLE);
-                    detailBinding.tvTrainingCount.setText("(" + trainings.size() + ")");
+                    detailBinding.tvTrainingCount.setText(String.valueOf(trainings.size()));
                     for (Training t : trainings) {
                         addTrainingItemToUi(t);
                     }
                 } else {
                     detailBinding.llTrainingSection.setVisibility(View.GONE);
-                    detailBinding.tvTrainingCount.setText("(0)");
+                    detailBinding.tvTrainingCount.setText("0");
                 }
             }
         });
@@ -350,8 +352,6 @@ public class ScanResultActivity extends AppCompatActivity {
 
         dialogBinding.tvAccidentFormTitle.setText("Tambah Kecelakaan — " + worker.name);
         dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.tvAccidentSelectedWorker.setText("Kontraktor: " + worker.name);
-        dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
@@ -538,6 +538,73 @@ public class ScanResultActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void showTrainingForm(Worker worker) {
+        com.example.scanbar.databinding.DialogTrainingFormBinding dialogBinding = 
+                com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogBinding.getRoot());
+        AlertDialog dialog = builder.create();
+
+        // UI Prep
+        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
+        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+
+        String[] options = {"PASS", "FAIL"};
+        ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
+        pfAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dialogBinding.spinnerPassFail.setAdapter(pfAdapter);
+
+        dialogBinding.btnTrainingCancel.setOnClickListener(v -> dialog.dismiss());
+        
+        // Use existing helpers from ScanResultActivity or DirectoryFragment pattern
+        setupDateFormat(dialogBinding.etTrainingDate);
+        setupTimeFormat(dialogBinding.etTrainingTime);
+        setupTimeFormat(dialogBinding.etTrainingEndTime);
+
+        dialogBinding.btnTrainingSave.setOnClickListener(v -> {
+            String title = dialogBinding.etTrainingTitle.getText().toString();
+            String date = dialogBinding.etTrainingDate.getText().toString();
+            String start = dialogBinding.etTrainingTime.getText().toString();
+            String end = dialogBinding.etTrainingEndTime.getText().toString();
+            String loc = dialogBinding.etTrainingLocation.getText().toString();
+            String result = dialogBinding.spinnerPassFail.getSelectedItem().toString();
+
+            if (title.isEmpty()) {
+                Toast.makeText(this, "Judul training harus diisi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                com.example.scanbar.data.Training t = new com.example.scanbar.data.Training(worker.regNo, title, date);
+                t.time = start;
+                t.endTime = end;
+                t.trainingLocation = loc;
+                t.passFail = result;
+                t.dataSource = "Input di HP";
+                
+                // Duration calculation logic
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                    Date dStart = sdf.parse(start);
+                    Date dEnd = sdf.parse(end);
+                    if (dStart != null && dEnd != null) {
+                        long diff = dEnd.getTime() - dStart.getTime();
+                        if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                        double hours = (double) diff / (1000 * 60 * 60);
+                        t.trainingHours = String.format(Locale.getDefault(), "%.1f", hours);
+                    }
+                } catch (Exception e) { t.trainingHours = "-"; }
+
+                AppDatabase.getDatabase(this).workerDao().insertTraining(t);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Data Training berhasil disimpan", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
+            });
+        });
+        dialog.show();
+    }
+
     private void addTrainingItemToUi(Training t) {
         View trainView = getLayoutInflater().inflate(R.layout.item_training_detail, detailBinding.llTrainingList, false);
         TextView title = trainView.findViewById(R.id.tvTrainTitle);
@@ -555,9 +622,9 @@ public class ScanResultActivity extends AppCompatActivity {
         loc.setText(t.trainingLocation != null ? t.trainingLocation : "-");
 
         if (t.passFail != null && t.passFail.equalsIgnoreCase("FAIL")) {
-            status.setBackgroundResource(R.drawable.bg_status_pill_error);
+            status.setBackgroundResource(R.drawable.bg_status_pill_violation);
         } else {
-            status.setBackgroundResource(R.drawable.bg_status_pill_success);
+            status.setBackgroundResource(R.drawable.bg_status_pill_info);
         }
 
         trainView.setOnClickListener(v -> showTrainingDetailsDialog(t));
@@ -611,8 +678,6 @@ public class ScanResultActivity extends AppCompatActivity {
                 com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(this).setView(dialogBinding.getRoot()).create();
 
-        dialogBinding.tvSelectedWorker.setVisibility(View.VISIBLE);
-        dialogBinding.tvSelectedWorker.setText("Pekerja: " + t.workerRegNo);
         dialogBinding.etWorkerSearch.setVisibility(View.GONE);
         dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
 
@@ -725,8 +790,6 @@ public class ScanResultActivity extends AppCompatActivity {
 
         dialogBinding.tvAccidentFormTitle.setText("Edit Kecelakaan");
         dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.tvAccidentSelectedWorker.setVisibility(View.VISIBLE);
-        dialogBinding.tvAccidentSelectedWorker.setText("Pekerja: " + a.workerRegNo);
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
