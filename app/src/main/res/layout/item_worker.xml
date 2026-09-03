@@ -62,7 +62,7 @@
                         android:gravity="center"
                         android:text="1 Pelanggaran"
                         android:textColor="@color/white"
-                        android:textSize="10sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:layout_marginEnd="8dp"
                         android:paddingHorizontal="12dp" />
@@ -76,7 +76,7 @@
                         android:gravity="center"
                         android:text="1 Teguran"
                         android:textColor="@color/white"
-                        android:textSize="10sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:paddingHorizontal="12dp" />
                 </LinearLayout>
@@ -97,7 +97,7 @@
                         android:gravity="center"
                         android:text="1 Kecelakaan"
                         android:textColor="@color/white"
-                        android:textSize="10sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:layout_marginEnd="8dp"
                         android:paddingHorizontal="12dp" />
@@ -111,7 +111,7 @@
                         android:gravity="center"
                         android:text="1 Training"
                         android:textColor="@color/white"
-                        android:textSize="10sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:visibility="gone"
                         android:paddingHorizontal="12dp" />
@@ -126,8 +126,8 @@
                     android:background="@drawable/bg_status_pill_clean"
                     android:gravity="center"
                     android:text="Bersih"
-                    android:textColor="@color/semantic_success_text"
-                    android:textSize="10sp"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
             </LinearLayout>

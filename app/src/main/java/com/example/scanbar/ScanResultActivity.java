@@ -234,31 +234,14 @@ public class ScanResultActivity extends AppCompatActivity {
         if (dialogBinding.tilInspectorName != null) {
             dialogBinding.tilInspectorName.setHint("Nama Petugas");
         }
+
+        // Hide worker search since worker is already known
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
         
         // --- 1. Kolom Tanggal (Numeric, Auto-Format DD/MM/YYYY, Backspace Fix) ---
-        dialogBinding.etVioDate.addTextChangedListener(new TextWatcher() {
-            private String current = "";
-            private boolean isDeleting = false;
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { isDeleting = count > after; }
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals(current)) return;
-                String clean = s.toString().replaceAll("[^\\d]", "");
-                if (isDeleting && s.length() > 0 && (s.charAt(s.length() - 1) == '/')) {
-                    if (clean.length() > 0) clean = clean.substring(0, clean.length() - 1);
-                }
-                String formatted = "";
-                int cl = clean.length();
-                if (cl > 0) {
-                    if (cl <= 2) formatted = clean;
-                    else if (cl <= 4) formatted = clean.substring(0, 2) + "/" + clean.substring(2);
-                    else formatted = clean.substring(0, 2) + "/" + clean.substring(2, 4) + "/" + clean.substring(4, Math.min(cl, 8));
-                }
-                current = formatted;
-                dialogBinding.etVioDate.setText(current);
-                dialogBinding.etVioDate.setSelection(current.length());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        setupDateFormat(dialogBinding.etVioDate);
 
         // --- 2. Kolom Denda (Numeric, State-Guard Anti-Loop, Rp. ###.###,00) ---
         dialogBinding.etVioFine.addTextChangedListener(new TextWatcher() {
@@ -351,12 +334,22 @@ public class ScanResultActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
 
         dialogBinding.tvAccidentFormTitle.setText("Tambah Kecelakaan — " + worker.name);
-        dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
+        
+        // Hide worker search since worker is already known
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
         sevAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         dialogBinding.spinnerAccidentSeverity.setAdapter(sevAdapter);
+
+        // --- Date Format Logic ---
+        setupDateFormat(dialogBinding.etAccidentDate);
+
+        // --- Time Format Logic ---
+        setupTimeFormat(dialogBinding.etAccidentTime);
 
         dialogBinding.btnAccidentCancel.setOnClickListener(v -> dialog.dismiss());
         dialogBinding.btnAccidentSave.setOnClickListener(v -> {
@@ -546,8 +539,9 @@ public class ScanResultActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
 
         // UI Prep
-        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
 
         String[] options = {"PASS", "FAIL"};
         ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
@@ -678,8 +672,9 @@ public class ScanResultActivity extends AppCompatActivity {
                 com.example.scanbar.databinding.DialogTrainingFormBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(this).setView(dialogBinding.getRoot()).create();
 
-        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
 
         String[] options = {"PASS", "FAIL"};
         ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
@@ -789,7 +784,11 @@ public class ScanResultActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this).setView(dialogBinding.getRoot()).create();
 
         dialogBinding.tvAccidentFormTitle.setText("Edit Kecelakaan");
-        dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
+        
+        // Hide worker search since worker is already known
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);

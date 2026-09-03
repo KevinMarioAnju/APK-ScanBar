@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Worker.class, Violation.class, User.class, Training.class, Accident.class, Reprimand.class}, version = 24)
+@Database(entities = {Worker.class, Violation.class, User.class, Training.class, Accident.class, Reprimand.class}, version = 25)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract WorkerDao workerDao();
     public abstract UserDao userDao();

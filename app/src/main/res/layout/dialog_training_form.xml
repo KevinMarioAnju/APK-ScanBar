@@ -20,41 +20,47 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cari &amp; Pilih Kontraktor"
-            android:textSize="11sp"
-            android:textColor="@color/text_low"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="2dp" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <LinearLayout
+            android:id="@+id/llWorkerSearchContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:hint="Ketik Nama atau No. Reg"
-            app:boxStrokeColor="@color/accent_teal"
-            app:hintTextColor="@color/accent_teal"
-            app:startIconDrawable="@android:drawable/ic_menu_search">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etWorkerSearch"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cari &amp; Pilih Kontraktor"
+                android:textSize="11sp"
+                android:textColor="@color/text_low"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="2dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:textSize="14sp"
-                android:textColor="@color/text_high" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginBottom="8dp"
+                android:hint="Ketik Nama atau No. Reg"
+                app:boxStrokeColor="@color/accent_teal"
+                app:hintTextColor="@color/accent_teal"
+                app:startIconDrawable="@android:drawable/ic_menu_search">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etWorkerSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_high" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvWorkerSearch"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/bg_search_modern"
-            android:visibility="gone" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvWorkerSearch"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_search_modern"
+                android:visibility="gone" />
+        </LinearLayout>
 
 
         <com.google.android.material.textfield.TextInputLayout

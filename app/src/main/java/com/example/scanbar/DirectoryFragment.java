@@ -723,7 +723,11 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         dialogBinding.tvAccidentFormTitle.setText("Kecelakaan — " + worker.name);
-        dialogBinding.tilWorkerSearch.setVisibility(View.GONE);
+        
+        // Hide worker search since worker is already known
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
 
         String[] options = {"LTI", "MTI", "First Aid", "Near Hit", "Property Damage"};
         ArrayAdapter<String> sevAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);
@@ -876,8 +880,9 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         AlertDialog dialog = builder.create();
 
         // Hide search components as worker is known
-        dialogBinding.etWorkerSearch.setVisibility(View.GONE);
-        dialogBinding.rvWorkerSearch.setVisibility(View.GONE);
+        if (dialogBinding.llWorkerSearchContainer != null) {
+            dialogBinding.llWorkerSearchContainer.setVisibility(View.GONE);
+        }
 
         String[] options = {"PASS", "FAIL"};
         ArrayAdapter<String> pfAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, options);
@@ -1651,17 +1656,14 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
         sheetBinding.tvSheetViolationBadge.setOnClickListener(v -> showViolationDialog(worker));
         sheetBinding.tvSheetAccidentBadge.setOnClickListener(v -> {
-            dialog.dismiss();
             showAccidentDialogForWorker(worker);
         });
 
         sheetBinding.tvSheetTrainingBadge.setOnClickListener(v -> {
-            dialog.dismiss();
             showTrainingDialogForWorker(worker);
         });
 
         sheetBinding.btnAddNoteSheet.setOnClickListener(v -> {
-            dialog.dismiss();
             showReprimandDialogFromSheet(worker);
         });
 
@@ -2325,13 +2327,23 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                     workers.add(w);
                 }
             } else if (name.contains("pelanggaran")) {
+                java.util.Set<String> uniqueViolations = new java.util.HashSet<>();
                 for (Row row : s) {
                     if (row.getRowNum() == 0) continue;
                     String regNo = df.formatCellValue(row.getCell(8)).trim();
                     if (regNo.isEmpty()) continue;
-                    Violation v = new Violation(regNo, df.formatCellValue(row.getCell(11)), 
-                                               df.formatCellValue(row.getCell(0)), df.formatCellValue(row.getCell(4)), 
-                                               df.formatCellValue(row.getCell(18))); // index 18 = Catatan
+                    
+                    String type = df.formatCellValue(row.getCell(11));
+                    String date = df.formatCellValue(row.getCell(0));
+                    String loc = df.formatCellValue(row.getCell(4));
+                    String docNo = df.formatCellValue(row.getCell(15));
+                    
+                    // Create a unique key to prevent aggregation bug/duplicates
+                    String uniqueKey = (regNo + "|" + date + "|" + type + "|" + docNo).toLowerCase();
+                    if (uniqueViolations.contains(uniqueKey)) continue;
+                    uniqueViolations.add(uniqueKey);
+
+                    Violation v = new Violation(regNo, type, date, loc, df.formatCellValue(row.getCell(18))); // index 18 = Catatan
                     v.year = df.formatCellValue(row.getCell(1));
                     v.time = df.formatCellValue(row.getCell(2));
                     v.plant = df.formatCellValue(row.getCell(3));
@@ -2343,7 +2355,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                     v.charge = df.formatCellValue(row.getCell(12));
                     v.damages = df.formatCellValue(row.getCell(13));
                     v.totalAll = df.formatCellValue(row.getCell(14));
-                    v.docNo = df.formatCellValue(row.getCell(15));
+                    v.docNo = docNo;
                     v.officer = df.formatCellValue(row.getCell(16));
                     v.dataSource = df.formatCellValue(row.getCell(17));
                     violations.add(v);
@@ -2380,8 +2392,19 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                 com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(b.getRoot()).create();
 
-        b.tvImportCountInfo.setText(String.format("Laporan Backup Lengkap:\n• %d Pekerja\n• %d Pelanggaran\n• %d Training\n• %d Kecelakaan", 
-                workers.size(), violations.size(), trainings.size(), accidents.size()));
+        // Calculate counts based on type (consistent with Profile logic)
+        int formalViolationCount = 0;
+        int reprimandCount = 0;
+        for (Violation v : violations) {
+            if (v.type != null && v.type.toLowerCase().contains("teguran")) {
+                reprimandCount++;
+            } else {
+                formalViolationCount++;
+            }
+        }
+
+        b.tvImportCountInfo.setText(String.format("Laporan Backup Lengkap:\n• %d Pekerja\n• %d Pelanggaran\n• %d Teguran\n• %d Training\n• %d Kecelakaan", 
+                workers.size(), formalViolationCount, reprimandCount, trainings.size(), accidents.size()));
 
         b.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
         // Show worker list as preview
@@ -2456,12 +2479,21 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
     private void importViolations(Sheet sheet, DataFormatter df) {
         List<Violation> list = new ArrayList<>();
+        java.util.Set<String> uniqueViolations = new java.util.HashSet<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;
-            String regNo = df.formatCellValue(row.getCell(8));
+            String regNo = df.formatCellValue(row.getCell(8)).trim();
             if (regNo.isEmpty()) continue;
-            Violation v = new Violation(regNo, df.formatCellValue(row.getCell(11)), 
-                                       df.formatCellValue(row.getCell(0)), df.formatCellValue(row.getCell(4)), "-");
+            
+            String type = df.formatCellValue(row.getCell(11));
+            String date = df.formatCellValue(row.getCell(0));
+            String docNo = df.formatCellValue(row.getCell(15));
+
+            String uniqueKey = (regNo + "|" + date + "|" + type + "|" + docNo).toLowerCase();
+            if (uniqueViolations.contains(uniqueKey)) continue;
+            uniqueViolations.add(uniqueKey);
+
+            Violation v = new Violation(regNo, type, date, df.formatCellValue(row.getCell(4)), "-");
             v.year = df.formatCellValue(row.getCell(1));
             v.time = df.formatCellValue(row.getCell(2));
             v.plant = df.formatCellValue(row.getCell(3));
@@ -2473,7 +2505,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             v.charge = df.formatCellValue(row.getCell(12));
             v.damages = df.formatCellValue(row.getCell(13));
             v.totalAll = df.formatCellValue(row.getCell(14));
-            v.docNo = df.formatCellValue(row.getCell(15));
+            v.docNo = docNo;
             v.officer = df.formatCellValue(row.getCell(16));
             v.dataSource = df.formatCellValue(row.getCell(17));
             list.add(v);
@@ -2483,11 +2515,19 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
     private void importTrainings(Sheet sheet, DataFormatter df) {
         List<Training> list = new ArrayList<>();
+        java.util.Set<String> uniqueItems = new java.util.HashSet<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;
-            String regNo = df.formatCellValue(row.getCell(0));
+            String regNo = df.formatCellValue(row.getCell(0)).trim();
             if (regNo.isEmpty()) continue;
-            Training t = new Training(regNo, df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)));
+            
+            String title = df.formatCellValue(row.getCell(3));
+            String date = df.formatCellValue(row.getCell(4));
+            String uniqueKey = (regNo + "|" + title + "|" + date).toLowerCase();
+            if (uniqueItems.contains(uniqueKey)) continue;
+            uniqueItems.add(uniqueKey);
+
+            Training t = new Training(regNo, title, date);
             t.workerName = df.formatCellValue(row.getCell(1));
             t.trainingCode = df.formatCellValue(row.getCell(2));
             t.time = df.formatCellValue(row.getCell(5));
@@ -2501,11 +2541,19 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
 
     private void importAccidents(Sheet sheet, DataFormatter df) {
         List<Accident> list = new ArrayList<>();
+        java.util.Set<String> uniqueItems = new java.util.HashSet<>();
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;
-            String regNo = df.formatCellValue(row.getCell(0));
+            String regNo = df.formatCellValue(row.getCell(0)).trim();
             if (regNo.isEmpty()) continue;
-            Accident a = new Accident(regNo, df.formatCellValue(row.getCell(1)), df.formatCellValue(row.getCell(2)),
+
+            String date = df.formatCellValue(row.getCell(1));
+            String time = df.formatCellValue(row.getCell(2));
+            String uniqueKey = (regNo + "|" + date + "|" + time).toLowerCase();
+            if (uniqueItems.contains(uniqueKey)) continue;
+            uniqueItems.add(uniqueKey);
+
+            Accident a = new Accident(regNo, date, time,
                                      df.formatCellValue(row.getCell(3)), df.formatCellValue(row.getCell(4)), df.formatCellValue(row.getCell(5)));
             list.add(a);
         }
@@ -2583,7 +2631,14 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
         com.example.scanbar.databinding.DialogImportPreviewBinding previewBinding = 
                 com.example.scanbar.databinding.DialogImportPreviewBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new AlertDialog.Builder(getContext()).setView(previewBinding.getRoot()).create();
-        previewBinding.tvImportCountInfo.setText("Ditemukan: " + list.size() + " riwayat pelanggaran");
+        
+        int formalCount = 0;
+        int teguranCount = 0;
+        for (Violation v : list) {
+            if (v.type != null && v.type.toLowerCase().contains("teguran")) teguranCount++;
+            else formalCount++;
+        }
+        previewBinding.tvImportCountInfo.setText(String.format("Ditemukan: %d Pelanggaran, %d Teguran", formalCount, teguranCount));
 
         previewBinding.rvImportPreview.setLayoutManager(new LinearLayoutManager(getContext()));
         previewBinding.rvImportPreview.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -2601,6 +2656,9 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
             @Override public int getItemCount() { return list.size(); }
         });
 
+        final int finalFormal = formalCount;
+        final int finalTeguran = teguranCount;
+
         previewBinding.btnImportCancel.setOnClickListener(v -> dialog.dismiss());
         previewBinding.btnImportConfirm.setOnClickListener(v -> {
             Executors.newSingleThreadExecutor().execute(() -> {
@@ -2616,7 +2674,7 @@ public class DirectoryFragment extends Fragment implements WorkerAdapter.OnWorke
                     }
                 }
                 getActivity().runOnUiThread(() -> {
-                    Toast.makeText(getContext(), "Berhasil mengimpor " + list.size() + " riwayat pelanggaran", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), String.format("Berhasil mengimpor %d Pelanggaran & %d Teguran", finalFormal, finalTeguran), Toast.LENGTH_LONG).show();
                     dialog.dismiss();
                 });
             });

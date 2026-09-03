@@ -5,6 +5,7 @@ import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "accidents",
+        indices = {@androidx.room.Index(value = {"workerRegNo", "date", "time"}, unique = true)},
         foreignKeys = @ForeignKey(entity = Worker.class,
                 parentColumns = "regNo",
                 childColumns = "workerRegNo",
